@@ -10,7 +10,9 @@ import (
 )
 
 type GQLClient interface {
-	GetCloudProfiles(ctx context.Context, username string, whereCloudProfile *CloudProfileWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfiles, error)
+	GetCloudProfiles(ctx context.Context, whereAccount AccountWhereUniqueInput, whereCloudProfile *CloudProfileWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfiles, error)
+	CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CloudProfileCreateInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error)
+	GetAccounts(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*GetAccounts, error)
 }
 
 type Client struct {
@@ -150,59 +152,202 @@ type Mutation struct {
 	AddGithubAppInstallation        *GithubAppInstallation    "json:\"addGithubAppInstallation,omitempty\" graphql:\"addGithubAppInstallation\""
 	RemoveGithubAppInstallation     bool                      "json:\"removeGithubAppInstallation\" graphql:\"removeGithubAppInstallation\""
 }
-type GetCloudProfiles_CloudProfiles struct {
+type CloudProfileFragment struct {
 	ID       string        "json:\"id\" graphql:\"id\""
 	Name     string        "json:\"name\" graphql:\"name\""
 	Provider CloudProvider "json:\"provider\" graphql:\"provider\""
 }
 
-func (t *GetCloudProfiles_CloudProfiles) GetID() string {
+func (t *CloudProfileFragment) GetID() string {
 	if t == nil {
-		t = &GetCloudProfiles_CloudProfiles{}
+		t = &CloudProfileFragment{}
 	}
 	return t.ID
 }
-func (t *GetCloudProfiles_CloudProfiles) GetName() string {
+func (t *CloudProfileFragment) GetName() string {
 	if t == nil {
-		t = &GetCloudProfiles_CloudProfiles{}
+		t = &CloudProfileFragment{}
 	}
 	return t.Name
 }
-func (t *GetCloudProfiles_CloudProfiles) GetProvider() *CloudProvider {
+func (t *CloudProfileFragment) GetProvider() *CloudProvider {
 	if t == nil {
-		t = &GetCloudProfiles_CloudProfiles{}
+		t = &CloudProfileFragment{}
 	}
 	return &t.Provider
 }
 
-type GetCloudProfiles struct {
-	CloudProfiles []*GetCloudProfiles_CloudProfiles "json:\"cloudProfiles\" graphql:\"cloudProfiles\""
+type AccountFragment struct {
+	ID       string  "json:\"id\" graphql:\"id\""
+	Username string  "json:\"username\" graphql:\"username\""
+	Email    string  "json:\"email\" graphql:\"email\""
+	Picture  *string "json:\"picture,omitempty\" graphql:\"picture\""
 }
 
-func (t *GetCloudProfiles) GetCloudProfiles() []*GetCloudProfiles_CloudProfiles {
+func (t *AccountFragment) GetID() string {
+	if t == nil {
+		t = &AccountFragment{}
+	}
+	return t.ID
+}
+func (t *AccountFragment) GetUsername() string {
+	if t == nil {
+		t = &AccountFragment{}
+	}
+	return t.Username
+}
+func (t *AccountFragment) GetEmail() string {
+	if t == nil {
+		t = &AccountFragment{}
+	}
+	return t.Email
+}
+func (t *AccountFragment) GetPicture() *string {
+	if t == nil {
+		t = &AccountFragment{}
+	}
+	return t.Picture
+}
+
+type GetAccounts_Me_Teams struct {
+	Account *AccountFragment "json:\"account\" graphql:\"account\""
+}
+
+func (t *GetAccounts_Me_Teams) GetAccount() *AccountFragment {
+	if t == nil {
+		t = &GetAccounts_Me_Teams{}
+	}
+	return t.Account
+}
+
+type GetAccounts_Me struct {
+	Account *AccountFragment        "json:\"account\" graphql:\"account\""
+	Teams   []*GetAccounts_Me_Teams "json:\"teams\" graphql:\"teams\""
+}
+
+func (t *GetAccounts_Me) GetAccount() *AccountFragment {
+	if t == nil {
+		t = &GetAccounts_Me{}
+	}
+	return t.Account
+}
+func (t *GetAccounts_Me) GetTeams() []*GetAccounts_Me_Teams {
+	if t == nil {
+		t = &GetAccounts_Me{}
+	}
+	return t.Teams
+}
+
+type GetCloudProfiles struct {
+	CloudProfiles []*CloudProfileFragment "json:\"cloudProfiles\" graphql:\"cloudProfiles\""
+}
+
+func (t *GetCloudProfiles) GetCloudProfiles() []*CloudProfileFragment {
 	if t == nil {
 		t = &GetCloudProfiles{}
 	}
 	return t.CloudProfiles
 }
 
-const GetCloudProfilesDocument = `query GetCloudProfiles ($username: String!, $whereCloudProfile: CloudProfileWhereInput) {
-	cloudProfiles(whereAccount: {username:$username}, whereCloudProfile: $whereCloudProfile) {
-		id
-		name
-		provider
+type CreateCloudProfile struct {
+	CreateCloudProfile *CloudProfileFragment "json:\"createCloudProfile\" graphql:\"createCloudProfile\""
+}
+
+func (t *CreateCloudProfile) GetCreateCloudProfile() *CloudProfileFragment {
+	if t == nil {
+		t = &CreateCloudProfile{}
 	}
+	return t.CreateCloudProfile
+}
+
+type GetAccounts struct {
+	Me GetAccounts_Me "json:\"me\" graphql:\"me\""
+}
+
+func (t *GetAccounts) GetMe() *GetAccounts_Me {
+	if t == nil {
+		t = &GetAccounts{}
+	}
+	return &t.Me
+}
+
+const GetCloudProfilesDocument = `query GetCloudProfiles ($whereAccount: AccountWhereUniqueInput!, $whereCloudProfile: CloudProfileWhereInput) {
+	cloudProfiles(whereAccount: $whereAccount, whereCloudProfile: $whereCloudProfile) {
+		... CloudProfileFragment
+	}
+}
+fragment CloudProfileFragment on CloudProfile {
+	id
+	name
+	provider
 }
 `
 
-func (c *Client) GetCloudProfiles(ctx context.Context, username string, whereCloudProfile *CloudProfileWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfiles, error) {
+func (c *Client) GetCloudProfiles(ctx context.Context, whereAccount AccountWhereUniqueInput, whereCloudProfile *CloudProfileWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfiles, error) {
 	vars := map[string]interface{}{
-		"username":          username,
+		"whereAccount":      whereAccount,
 		"whereCloudProfile": whereCloudProfile,
 	}
 
 	var res GetCloudProfiles
 	if err := c.Client.Post(ctx, "GetCloudProfiles", GetCloudProfilesDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const CreateCloudProfileDocument = `mutation CreateCloudProfile ($whereAccount: AccountWhereUniqueInput!, $data: CloudProfileCreateInput!) {
+	createCloudProfile(whereAccount: $whereAccount, data: $data) {
+		... CloudProfileFragment
+	}
+}
+fragment CloudProfileFragment on CloudProfile {
+	id
+	name
+	provider
+}
+`
+
+func (c *Client) CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CloudProfileCreateInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error) {
+	vars := map[string]interface{}{
+		"whereAccount": whereAccount,
+		"data":         data,
+	}
+
+	var res CreateCloudProfile
+	if err := c.Client.Post(ctx, "CreateCloudProfile", CreateCloudProfileDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetAccountsDocument = `query GetAccounts {
+	me {
+		account {
+			... AccountFragment
+		}
+		teams {
+			account {
+				... AccountFragment
+			}
+		}
+	}
+}
+fragment AccountFragment on Account {
+	id
+	username
+	email
+	picture
+}
+`
+
+func (c *Client) GetAccounts(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*GetAccounts, error) {
+	vars := map[string]interface{}{}
+
+	var res GetAccounts
+	if err := c.Client.Post(ctx, "GetAccounts", GetAccountsDocument, &res, vars, interceptors...); err != nil {
 		return nil, err
 	}
 

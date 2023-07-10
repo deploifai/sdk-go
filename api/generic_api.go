@@ -86,13 +86,13 @@ func (r *RestClient) Do(request *http.Request) (*http.Response, error) {
 	return r.httpClient.Do(request)
 }
 
-func (r *RestClient) ReadResponseJson(response *http.Response, t *interface{}) error {
+func (r *RestClient) ReadResponseJson(response *http.Response, v any) error {
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 		// ignore error
 	}(response.Body)
 
-	return json.NewDecoder(response.Body).Decode(t)
+	return json.NewDecoder(response.Body).Decode(v)
 }
 
 func createRestClient(endpoint string, headers RequestHeaders) RestClient {
@@ -118,15 +118,15 @@ func NewGenericAPI[T GQLClient](newGQLClientFunc NewGQLClientFunc[T], gqlEndpoin
 	}
 }
 
-func (api *GenericAPI[T]) GetGQLClient() T {
-	return api.GQLClient
+func (r GenericAPI[T]) GetGQLClient() T {
+	return r.GQLClient
 }
 
-func (api *GenericAPI[T]) GetRestClient() RestClient {
-	return api.RestClient
+func (r GenericAPI[T]) GetRestClient() RestClient {
+	return r.RestClient
 }
 
-func (api *GenericAPI[T]) ProcessGQLError(err error) error {
+func (r GenericAPI[T]) ProcessGQLError(err error) error {
 	if handledError, ok := err.(*clientv2.ErrorResponse); ok {
 		msg := "handled error: "
 		if handledError.NetworkError != nil {
@@ -138,9 +138,4 @@ func (api *GenericAPI[T]) ProcessGQLError(err error) error {
 	}
 
 	return errors.New(fmt.Sprintf("unhandled error: %s\n", err.Error()))
-}
-
-// WithAuthHeader returns a RequestHeader with the key "Authorization" and the value of the authToken
-func WithAuthHeader(authToken string) RequestHeader {
-	return RequestHeader{Key: "Authorization", Value: authToken}
 }

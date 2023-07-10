@@ -10,3 +10,5 @@ func NewAPI(gqlEndpoint string, restEndpoint string, headers RequestHeaders) API
 
 	return NewGenericAPI[generated.GQLClient](generated.NewClient, gqlEndpoint, restEndpoint, headers)
 }
+
+type Provider GenericProvider[generated.GQLClient]
