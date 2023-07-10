@@ -1,0 +1,23 @@
+fragment CloudProfileFragment on CloudProfile {
+    id
+    name
+    provider
+}
+
+query GetCloudProfiles($whereAccount: AccountWhereUniqueInput! $whereCloudProfile: CloudProfileWhereInput) {
+    cloudProfiles(
+        whereAccount: $whereAccount
+        whereCloudProfile: $whereCloudProfile
+    ) {
+       ...CloudProfileFragment
+    }
+}
+
+mutation CreateCloudProfile($whereAccount: AccountWhereUniqueInput! $data: CloudProfileCreateInput!) {
+    createCloudProfile(
+        whereAccount: $whereAccount
+        data: $data
+    ) {
+        ...CloudProfileFragment
+    }
+}

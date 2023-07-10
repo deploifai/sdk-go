@@ -1,0 +1,19 @@
+fragment AccountFragment on Account {
+    id
+    username
+    email
+    picture
+}
+
+query GetAccounts {
+    me {
+        account {
+            ...AccountFragment
+        }
+        teams {
+            account {
+                ...AccountFragment
+            }
+        }
+    }
+}
