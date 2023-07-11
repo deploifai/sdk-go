@@ -11,32 +11,34 @@ import (
 	"net/http"
 )
 
-// GenericAPI is a generic API client that can be used to create a generated GQLClient and a default http RestClient
+// GenericAPI is a generic api client that uses a generated GQLClient and a default http RestClient.
 type GenericAPI[T GQLClient] struct {
 	GQLClient T
 
 	RestClient RestClient
 }
 
-// RequestHeader defines a request header for a http request
+// RequestHeader defines a request header for a http request.
 type RequestHeader struct {
 	Key   string
 	Value string
 }
 
-// RequestHeaders defines a list of RequestHeader
+// RequestHeaders defines a list of RequestHeader(s).
 type RequestHeaders = []RequestHeader
 
-// GQLClient defines the interface for the generated graphQL client
+// GQLClient defines the interface for the generated graphQL client.
 type GQLClient interface{}
 
-// NewGQLClientFunc defines the generated function signature for creating a new GQLClient
+// NewGQLClientFunc defines the signature of the generated function that creates a new GQLClient.
+// The function is generated from the [gqlgenc] tool.
+// [gqlgenc]: https://github.com/Yamashou/gqlgenc
 type NewGQLClientFunc[T GQLClient] func(cli *http.Client, baseURL string, options *clientv2.Options, interceptors ...clientv2.RequestInterceptor) T
 
-// createGQLClient takes a NewGQLClientFunc, endpoint and authToken
-// runs the NewGQLClientFunc
-// sets the authToken as a request header in the request interceptor
-// returns a GQLClient
+// createGQLClient takes a NewGQLClientFunc, endpoint and request headers, and
+// runs the NewGQLClientFunc, passing in the endpoint.
+// It also sets the request headers in the request interceptor.
+// And returns a GQLClient.
 func createGQLClient[T GQLClient](newGQLClientFunc NewGQLClientFunc[T], endpoint string, headers RequestHeaders) T {
 
 	requestInterceptor := func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
@@ -50,15 +52,15 @@ func createGQLClient[T GQLClient](newGQLClientFunc NewGQLClientFunc[T], endpoint
 	return newGQLClientFunc(http.DefaultClient, endpoint, nil, requestInterceptor)
 }
 
-// RestClient defines the interface for the default http client
+// RestClient defines the interface for the default http client.
 type RestClient struct {
 	endpoint   string
 	headers    RequestHeaders
 	httpClient *http.Client
 }
 
-// NewRequest takes a method, uri, headers and body
-// if the request needs an empty body, like for a GET request, just pass in empty list of bytes
+// NewRequest takes a method, uri, request headers and body.
+// if the request needs an empty body, like for a GET request, just pass in an empty list of bytes.
 func (r *RestClient) NewRequest(method string, uri string, headers RequestHeaders, body []byte) (request *http.Request, err error) {
 	if r.endpoint == "" {
 		return nil, errors.New("rest client endpoint not set")
@@ -82,10 +84,12 @@ func (r *RestClient) NewRequest(method string, uri string, headers RequestHeader
 	return request, nil
 }
 
+// Do sends a http request and returns a http response.
 func (r *RestClient) Do(request *http.Request) (*http.Response, error) {
 	return r.httpClient.Do(request)
 }
 
+// ReadResponseJson reads the response body and unmarshals it into the given interface.
 func (r *RestClient) ReadResponseJson(response *http.Response, v any) error {
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
@@ -103,13 +107,11 @@ func createRestClient(endpoint string, headers RequestHeaders) RestClient {
 	}
 }
 
-// NewGenericAPI takes a NewGQLClientFunc, endpoint, and authToken, and
-// returns an GenericAPI interface
+// NewGenericAPI takes a NewGQLClientFunc, a gqlEndpoint for the GQLClient, a restEndpoint for the RestClient, and request headers.
+// The request headers are set the same for both clients. NewGenericAPI returns an GenericAPI interface.
 // Example:
-// ```
-// api := NewGenericAPI[generated.GQLClient](generated.NewClient, "<endpoint>", "<authToken>")
-// api.GetGQLClient().GetUser(...)
-// ```
+//
+//	api := NewGenericAPI[generated.GQLClient](generated.NewClient, "<gqlEndpoint>", "<restEndpoint>", RequestHeaders{WithAuthToken("<authToken>")})
 func NewGenericAPI[T GQLClient](newGQLClientFunc NewGQLClientFunc[T], gqlEndpoint string, restEndpoint string, headers RequestHeaders) GenericAPI[T] {
 
 	return GenericAPI[T]{
@@ -118,14 +120,17 @@ func NewGenericAPI[T GQLClient](newGQLClientFunc NewGQLClientFunc[T], gqlEndpoin
 	}
 }
 
+// GetGQLClient returns the GQLClient.
 func (r GenericAPI[T]) GetGQLClient() T {
 	return r.GQLClient
 }
 
+// GetRestClient returns the RestClient.
 func (r GenericAPI[T]) GetRestClient() RestClient {
 	return r.RestClient
 }
 
+// ProcessGQLError takes an error returned by the GQLClient, improve it's message formatting and returns it.
 func (r GenericAPI[T]) ProcessGQLError(err error) error {
 	if handledError, ok := err.(*clientv2.ErrorResponse); ok {
 		msg := "handled error: "
