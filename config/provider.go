@@ -6,6 +6,7 @@ import (
 	"github.com/deploifai/sdk-go/credentials"
 )
 
+// CredentialsProvider is an interface for retrieving an credentials.Provider
 type CredentialsProvider interface {
 	getCredentials(ctx context.Context) (credentials.Provider, bool, error)
 }

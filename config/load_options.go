@@ -15,6 +15,7 @@ type LoadOptions struct {
 // LoadOptionsFunc is a type alias for LoadOptions functional option
 type LoadOptionsFunc func(*LoadOptions) error
 
+// WithCredentials is a functional option for setting the [LoadOptions.Credentials]
 func WithCredentials(v credentials.Provider) LoadOptionsFunc {
 	return func(o *LoadOptions) error {
 		o.Credentials = v
@@ -22,6 +23,7 @@ func WithCredentials(v credentials.Provider) LoadOptionsFunc {
 	}
 }
 
+// WithAPI is a functional option for setting the [LoadOptions.API]
 func WithAPI(v api.Provider) LoadOptionsFunc {
 	return func(o *LoadOptions) error {
 		o.API = v

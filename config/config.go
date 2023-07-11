@@ -6,7 +6,7 @@ import (
 	"github.com/deploifai/sdk-go/credentials"
 )
 
-// Config provides the configuration for the service clients
+// Config provides the configuration for the service clients.
 type Config struct {
 	Credentials credentials.Provider
 	API         api.Provider
@@ -49,6 +49,7 @@ func (cs configs) ResolveConfig(ctx context.Context, resolvers []configResolver)
 	return cfg, nil
 }
 
+// LoadDefaultConfig loads the default configuration for the service clients.
 func LoadDefaultConfig(ctx context.Context, optFns ...func(*LoadOptions) error) (Config, error) {
 
 	var options LoadOptions

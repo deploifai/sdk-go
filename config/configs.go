@@ -5,8 +5,10 @@ import (
 	"github.com/deploifai/sdk-go/credentials"
 )
 
+// IConfig is an interface that all external configuration values must satisfy.
 type IConfig interface{}
 
+// configs is a slice of IConfig types.
 type configs []IConfig
 
 type loader func(context.Context, configs) (IConfig, error)
