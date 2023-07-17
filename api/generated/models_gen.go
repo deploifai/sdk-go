@@ -274,6 +274,7 @@ type Account struct {
 	RayClusters                []*RayCluster          `json:"rayClusters"`
 	ContainerRegistries        []*ContainerRegistry   `json:"containerRegistries"`
 	CloudProfiles              []*CloudProfile        `json:"cloudProfiles"`
+	DefaultCloudProfile        *CloudProfile          `json:"defaultCloudProfile"`
 	KubernetesProfiles         []*KubernetesProfile   `json:"kubernetesProfiles"`
 	Picture                    *string                `json:"picture"`
 	IsTeam                     bool                   `json:"isTeam"`
@@ -315,6 +316,7 @@ type AccountOrderByWithRelationInput struct {
 	RayClusters                *RayClusterOrderByRelationAggregateInput        `json:"rayClusters,omitempty"`
 	ContainerRegistries        *ContainerRegistryOrderByRelationAggregateInput `json:"containerRegistries,omitempty"`
 	CloudProfiles              *CloudProfileOrderByRelationAggregateInput      `json:"cloudProfiles,omitempty"`
+	DefaultCloudProfile        *CloudProfileOrderByWithRelationInput           `json:"defaultCloudProfile,omitempty"`
 	KubernetesProfiles         *KubernetesProfileOrderByRelationAggregateInput `json:"kubernetesProfiles,omitempty"`
 }
 
@@ -347,6 +349,7 @@ type AccountWhereInput struct {
 	RayClusters                *RayClusterListRelationFilter        `json:"rayClusters,omitempty"`
 	ContainerRegistries        *ContainerRegistryListRelationFilter `json:"containerRegistries,omitempty"`
 	CloudProfiles              *CloudProfileListRelationFilter      `json:"cloudProfiles,omitempty"`
+	DefaultCloudProfile        *CloudProfileRelationFilter          `json:"defaultCloudProfile,omitempty"`
 	KubernetesProfiles         *KubernetesProfileListRelationFilter `json:"kubernetesProfiles,omitempty"`
 }
 
@@ -1006,12 +1009,6 @@ type CloudCredentialsRelationFilter struct {
 	IsNot *CloudCredentialsWhereInput `json:"isNot,omitempty"`
 }
 
-type CloudCredentialsUpdateInput struct {
-	AwsCredentials   *AWSCredentials   `json:"awsCredentials,omitempty"`
-	AzureCredentials *AzureCredentials `json:"azureCredentials,omitempty"`
-	GcpCredentials   *GCPCredentials   `json:"gcpCredentials,omitempty"`
-}
-
 type CloudCredentialsWhereInput struct {
 	And                    []*CloudCredentialsWhereInput `json:"AND,omitempty"`
 	Or                     []*CloudCredentialsWhereInput `json:"OR,omitempty"`
@@ -1030,14 +1027,17 @@ type CloudCredentialsWhereInput struct {
 }
 
 type CloudProfile struct {
-	ID            string             `json:"id"`
-	Name          string             `json:"name"`
-	Provider      CloudProvider      `json:"provider"`
-	AccountID     string             `json:"accountId"`
-	CredentialsID string             `json:"credentialsId"`
-	Count         *CloudProfileCount `json:"_count"`
-	IsEmpty       bool               `json:"isEmpty"`
-	Credentials   CloudCredentials   `json:"credentials"`
+	ID               string             `json:"id"`
+	Name             string             `json:"name"`
+	Provider         CloudProvider      `json:"provider"`
+	Hosted           bool               `json:"hosted"`
+	AccountID        string             `json:"accountId"`
+	DefaultAccountID *string            `json:"defaultAccountId"`
+	CredentialsID    string             `json:"credentialsId"`
+	Count            *CloudProfileCount `json:"_count"`
+	IsEmpty          bool               `json:"isEmpty"`
+	IsDefault        bool               `json:"isDefault"`
+	Credentials      CloudCredentials   `json:"credentials"`
 }
 
 type CloudProfileAccountIDNameProviderCompoundUniqueInput struct {
@@ -1056,14 +1056,6 @@ type CloudProfileCount struct {
 	ContainerRegistries int64 `json:"containerRegistries"`
 }
 
-type CloudProfileCreateInput struct {
-	Provider         CloudProvider     `json:"provider"`
-	Name             string            `json:"name"`
-	AwsCredentials   *AWSCredentials   `json:"awsCredentials,omitempty"`
-	AzureCredentials *AzureCredentials `json:"azureCredentials,omitempty"`
-	GcpCredentials   *GCPCredentials   `json:"gcpCredentials,omitempty"`
-}
-
 type CloudProfileListRelationFilter struct {
 	Every *CloudProfileWhereInput `json:"every,omitempty"`
 	Some  *CloudProfileWhereInput `json:"some,omitempty"`
@@ -1078,9 +1070,12 @@ type CloudProfileOrderByWithRelationInput struct {
 	ID                  *SortOrder                                      `json:"id,omitempty"`
 	Name                *SortOrder                                      `json:"name,omitempty"`
 	Provider            *SortOrder                                      `json:"provider,omitempty"`
+	Hosted              *SortOrder                                      `json:"hosted,omitempty"`
 	AccountID           *SortOrder                                      `json:"accountId,omitempty"`
+	DefaultAccountID    *SortOrder                                      `json:"defaultAccountId,omitempty"`
 	CredentialsID       *SortOrder                                      `json:"credentialsId,omitempty"`
 	Account             *AccountOrderByWithRelationInput                `json:"account,omitempty"`
+	DefaultAccount      *AccountOrderByWithRelationInput                `json:"defaultAccount,omitempty"`
 	Credentials         *CloudCredentialsOrderByWithRelationInput       `json:"credentials,omitempty"`
 	Projects            *ProjectOrderByRelationAggregateInput           `json:"projects,omitempty"`
 	Vpcs                *VPCOrderByRelationAggregateInput               `json:"vpcs,omitempty"`
@@ -1096,10 +1091,6 @@ type CloudProfileRelationFilter struct {
 	IsNot *CloudProfileWhereInput `json:"isNot,omitempty"`
 }
 
-type CloudProfileUpdateInput struct {
-	Name *string `json:"name,omitempty"`
-}
-
 type CloudProfileWhereInput struct {
 	And                 []*CloudProfileWhereInput            `json:"AND,omitempty"`
 	Or                  []*CloudProfileWhereInput            `json:"OR,omitempty"`
@@ -1107,9 +1098,12 @@ type CloudProfileWhereInput struct {
 	ID                  *StringFilter                        `json:"id,omitempty"`
 	Name                *StringFilter                        `json:"name,omitempty"`
 	Provider            *EnumCloudProviderFilter             `json:"provider,omitempty"`
+	Hosted              *BoolFilter                          `json:"hosted,omitempty"`
 	AccountID           *StringFilter                        `json:"accountId,omitempty"`
+	DefaultAccountID    *StringNullableFilter                `json:"defaultAccountId,omitempty"`
 	CredentialsID       *StringFilter                        `json:"credentialsId,omitempty"`
 	Account             *AccountRelationFilter               `json:"account,omitempty"`
+	DefaultAccount      *AccountRelationFilter               `json:"defaultAccount,omitempty"`
 	Credentials         *CloudCredentialsRelationFilter      `json:"credentials,omitempty"`
 	Projects            *ProjectListRelationFilter           `json:"projects,omitempty"`
 	Vpcs                *VPCListRelationFilter               `json:"vpcs,omitempty"`
@@ -1122,6 +1116,7 @@ type CloudProfileWhereInput struct {
 
 type CloudProfileWhereUniqueInput struct {
 	ID                    *string                                               `json:"id,omitempty"`
+	DefaultAccountID      *string                                               `json:"defaultAccountId,omitempty"`
 	CredentialsID         *string                                               `json:"credentialsId,omitempty"`
 	AccountIDNameProvider *CloudProfileAccountIDNameProviderCompoundUniqueInput `json:"accountId_name_provider,omitempty"`
 }
@@ -1488,6 +1483,16 @@ type CreateAzureNebulonConfig struct {
 
 type CreateAzureYodaConfig struct {
 	AzureRegion string `json:"azureRegion"`
+}
+
+type CreateCloudProfileInput struct {
+	Provider         CloudProvider     `json:"provider"`
+	Name             string            `json:"name"`
+	AwsCredentials   *AWSCredentials   `json:"awsCredentials,omitempty"`
+	AzureCredentials *AzureCredentials `json:"azureCredentials,omitempty"`
+	GcpCredentials   *GCPCredentials   `json:"gcpCredentials,omitempty"`
+	IsDefault        *bool             `json:"isDefault,omitempty"`
+	Hosted           *bool             `json:"hosted,omitempty"`
 }
 
 type CreateCloudProviderAppConfig struct {
@@ -3951,6 +3956,17 @@ type UpdateBillingAccountInput struct {
 	Email *string `json:"email,omitempty"`
 }
 
+type UpdateCloudCredentialsInput struct {
+	AwsCredentials   *AWSCredentials   `json:"awsCredentials,omitempty"`
+	AzureCredentials *AzureCredentials `json:"azureCredentials,omitempty"`
+	GcpCredentials   *GCPCredentials   `json:"gcpCredentials,omitempty"`
+}
+
+type UpdateCloudProfileInput struct {
+	Name      *string `json:"name,omitempty"`
+	IsDefault *bool   `json:"isDefault,omitempty"`
+}
+
 type UpdateExperimentRunInput struct {
 	Status        *ExperimentRunStatus `json:"status,omitempty"`
 	DevelImageTag *string              `json:"develImageTag,omitempty"`
@@ -4560,24 +4576,28 @@ func (e BillingSubscriptionStatus) MarshalGQL(w io.Writer) {
 type CloudProfileScalarFieldEnum string
 
 const (
-	CloudProfileScalarFieldEnumID            CloudProfileScalarFieldEnum = "id"
-	CloudProfileScalarFieldEnumName          CloudProfileScalarFieldEnum = "name"
-	CloudProfileScalarFieldEnumProvider      CloudProfileScalarFieldEnum = "provider"
-	CloudProfileScalarFieldEnumAccountID     CloudProfileScalarFieldEnum = "accountId"
-	CloudProfileScalarFieldEnumCredentialsID CloudProfileScalarFieldEnum = "credentialsId"
+	CloudProfileScalarFieldEnumID               CloudProfileScalarFieldEnum = "id"
+	CloudProfileScalarFieldEnumName             CloudProfileScalarFieldEnum = "name"
+	CloudProfileScalarFieldEnumProvider         CloudProfileScalarFieldEnum = "provider"
+	CloudProfileScalarFieldEnumHosted           CloudProfileScalarFieldEnum = "hosted"
+	CloudProfileScalarFieldEnumAccountID        CloudProfileScalarFieldEnum = "accountId"
+	CloudProfileScalarFieldEnumDefaultAccountID CloudProfileScalarFieldEnum = "defaultAccountId"
+	CloudProfileScalarFieldEnumCredentialsID    CloudProfileScalarFieldEnum = "credentialsId"
 )
 
 var AllCloudProfileScalarFieldEnum = []CloudProfileScalarFieldEnum{
 	CloudProfileScalarFieldEnumID,
 	CloudProfileScalarFieldEnumName,
 	CloudProfileScalarFieldEnumProvider,
+	CloudProfileScalarFieldEnumHosted,
 	CloudProfileScalarFieldEnumAccountID,
+	CloudProfileScalarFieldEnumDefaultAccountID,
 	CloudProfileScalarFieldEnumCredentialsID,
 }
 
 func (e CloudProfileScalarFieldEnum) IsValid() bool {
 	switch e {
-	case CloudProfileScalarFieldEnumID, CloudProfileScalarFieldEnumName, CloudProfileScalarFieldEnumProvider, CloudProfileScalarFieldEnumAccountID, CloudProfileScalarFieldEnumCredentialsID:
+	case CloudProfileScalarFieldEnumID, CloudProfileScalarFieldEnumName, CloudProfileScalarFieldEnumProvider, CloudProfileScalarFieldEnumHosted, CloudProfileScalarFieldEnumAccountID, CloudProfileScalarFieldEnumDefaultAccountID, CloudProfileScalarFieldEnumCredentialsID:
 		return true
 	}
 	return false
