@@ -11,7 +11,7 @@ import (
 
 type GQLClient interface {
 	GetCloudProfiles(ctx context.Context, whereAccount AccountWhereUniqueInput, whereCloudProfile *CloudProfileWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfiles, error)
-	CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CloudProfileCreateInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error)
+	CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateCloudProfileInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error)
 	GetAccounts(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*GetAccounts, error)
 }
 
@@ -297,7 +297,7 @@ func (c *Client) GetCloudProfiles(ctx context.Context, whereAccount AccountWhere
 	return &res, nil
 }
 
-const CreateCloudProfileDocument = `mutation CreateCloudProfile ($whereAccount: AccountWhereUniqueInput!, $data: CloudProfileCreateInput!) {
+const CreateCloudProfileDocument = `mutation CreateCloudProfile ($whereAccount: AccountWhereUniqueInput!, $data: CreateCloudProfileInput!) {
 	createCloudProfile(whereAccount: $whereAccount, data: $data) {
 		... CloudProfileFragment
 	}
@@ -309,7 +309,7 @@ fragment CloudProfileFragment on CloudProfile {
 }
 `
 
-func (c *Client) CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CloudProfileCreateInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error) {
+func (c *Client) CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateCloudProfileInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error) {
 	vars := map[string]interface{}{
 		"whereAccount": whereAccount,
 		"data":         data,

@@ -13,7 +13,7 @@ query GetCloudProfiles($whereAccount: AccountWhereUniqueInput! $whereCloudProfil
     }
 }
 
-mutation CreateCloudProfile($whereAccount: AccountWhereUniqueInput! $data: CloudProfileCreateInput!) {
+mutation CreateCloudProfile($whereAccount: AccountWhereUniqueInput! $data: CreateCloudProfileInput!) {
     createCloudProfile(
         whereAccount: $whereAccount
         data: $data
