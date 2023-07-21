@@ -1,0 +1,22 @@
+fragment ProjectFragment on Project {
+    id
+    name
+    createdAt
+}
+
+
+query GetProjects($whereAccount: AccountWhereUniqueInput!, $whereProject: ProjectWhereInput) {
+  projects(whereAccount: $whereAccount, whereProject: $whereProject) {
+    ...ProjectFragment
+  }
+}
+
+
+mutation CreateProject($data: CreateProjectInput!, $whereAccount: AccountWhereUniqueInput!){
+    createProject(
+        data: $data,
+        whereAccount: $whereAccount
+    ){
+        ...ProjectFragment
+    }
+}
