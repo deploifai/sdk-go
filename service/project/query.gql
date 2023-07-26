@@ -12,7 +12,7 @@ query GetProjects($whereAccount: AccountWhereUniqueInput!, $whereProject: Projec
 }
 
 
-mutation CreateProject($data: CreateProjectInput!, $whereAccount: AccountWhereUniqueInput!){
+mutation CreateProject($whereAccount: AccountWhereUniqueInput!, $data: CreateProjectInput!){
     createProject(
         data: $data,
         whereAccount: $whereAccount
