@@ -5,6 +5,7 @@ package generated
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/Yamashou/gqlgenc/clientv2"
 )
@@ -12,6 +13,8 @@ import (
 type GQLClient interface {
 	GetCloudProfiles(ctx context.Context, whereAccount AccountWhereUniqueInput, whereCloudProfile *CloudProfileWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfiles, error)
 	CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateCloudProfileInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error)
+	GetProjects(ctx context.Context, whereAccount AccountWhereUniqueInput, whereProject *ProjectWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetProjects, error)
+	CreateProject(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateProjectInput, interceptors ...clientv2.RequestInterceptor) (*CreateProject, error)
 	GetAccounts(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*GetAccounts, error)
 }
 
@@ -177,6 +180,31 @@ func (t *CloudProfileFragment) GetProvider() *CloudProvider {
 	return &t.Provider
 }
 
+type ProjectFragment struct {
+	ID        string    "json:\"id\" graphql:\"id\""
+	Name      string    "json:\"name\" graphql:\"name\""
+	CreatedAt time.Time "json:\"createdAt\" graphql:\"createdAt\""
+}
+
+func (t *ProjectFragment) GetID() string {
+	if t == nil {
+		t = &ProjectFragment{}
+	}
+	return t.ID
+}
+func (t *ProjectFragment) GetName() string {
+	if t == nil {
+		t = &ProjectFragment{}
+	}
+	return t.Name
+}
+func (t *ProjectFragment) GetCreatedAt() *time.Time {
+	if t == nil {
+		t = &ProjectFragment{}
+	}
+	return &t.CreatedAt
+}
+
 type AccountFragment struct {
 	ID       string  "json:\"id\" graphql:\"id\""
 	Username string  "json:\"username\" graphql:\"username\""
@@ -260,6 +288,28 @@ func (t *CreateCloudProfile) GetCreateCloudProfile() *CloudProfileFragment {
 	return t.CreateCloudProfile
 }
 
+type GetProjects struct {
+	Projects []*ProjectFragment "json:\"projects\" graphql:\"projects\""
+}
+
+func (t *GetProjects) GetProjects() []*ProjectFragment {
+	if t == nil {
+		t = &GetProjects{}
+	}
+	return t.Projects
+}
+
+type CreateProject struct {
+	CreateProject *ProjectFragment "json:\"createProject\" graphql:\"createProject\""
+}
+
+func (t *CreateProject) GetCreateProject() *ProjectFragment {
+	if t == nil {
+		t = &CreateProject{}
+	}
+	return t.CreateProject
+}
+
 type GetAccounts struct {
 	Me GetAccounts_Me "json:\"me\" graphql:\"me\""
 }
@@ -317,6 +367,58 @@ func (c *Client) CreateCloudProfile(ctx context.Context, whereAccount AccountWhe
 
 	var res CreateCloudProfile
 	if err := c.Client.Post(ctx, "CreateCloudProfile", CreateCloudProfileDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetProjectsDocument = `query GetProjects ($whereAccount: AccountWhereUniqueInput!, $whereProject: ProjectWhereInput) {
+	projects(whereAccount: $whereAccount, whereProject: $whereProject) {
+		... ProjectFragment
+	}
+}
+fragment ProjectFragment on Project {
+	id
+	name
+	createdAt
+}
+`
+
+func (c *Client) GetProjects(ctx context.Context, whereAccount AccountWhereUniqueInput, whereProject *ProjectWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetProjects, error) {
+	vars := map[string]interface{}{
+		"whereAccount": whereAccount,
+		"whereProject": whereProject,
+	}
+
+	var res GetProjects
+	if err := c.Client.Post(ctx, "GetProjects", GetProjectsDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const CreateProjectDocument = `mutation CreateProject ($whereAccount: AccountWhereUniqueInput!, $data: CreateProjectInput!) {
+	createProject(data: $data, whereAccount: $whereAccount) {
+		... ProjectFragment
+	}
+}
+fragment ProjectFragment on Project {
+	id
+	name
+	createdAt
+}
+`
+
+func (c *Client) CreateProject(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateProjectInput, interceptors ...clientv2.RequestInterceptor) (*CreateProject, error) {
+	vars := map[string]interface{}{
+		"whereAccount": whereAccount,
+		"data":         data,
+	}
+
+	var res CreateProject
+	if err := c.Client.Post(ctx, "CreateProject", CreateProjectDocument, &res, vars, interceptors...); err != nil {
 		return nil, err
 	}
 
