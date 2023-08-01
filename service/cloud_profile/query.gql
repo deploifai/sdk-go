@@ -4,6 +4,12 @@ fragment CloudProfileFragment on CloudProfile {
     provider
 }
 
+query GetCloudProfile($where: CloudProfileWhereUniqueInput!) {
+    cloudProfile(where: $where) {
+        ...CloudProfileFragment
+    }
+}
+
 query GetCloudProfiles($whereAccount: AccountWhereUniqueInput! $whereCloudProfile: CloudProfileWhereInput) {
     cloudProfiles(
         whereAccount: $whereAccount

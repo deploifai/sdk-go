@@ -11,6 +11,7 @@ import (
 )
 
 type GQLClient interface {
+	GetCloudProfile(ctx context.Context, where CloudProfileWhereUniqueInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfile, error)
 	GetCloudProfiles(ctx context.Context, whereAccount AccountWhereUniqueInput, whereCloudProfile *CloudProfileWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfiles, error)
 	CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateCloudProfileInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error)
 	GetProjects(ctx context.Context, whereAccount AccountWhereUniqueInput, whereProject *ProjectWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetProjects, error)
@@ -181,9 +182,10 @@ func (t *CloudProfileFragment) GetProvider() *CloudProvider {
 }
 
 type ProjectFragment struct {
-	ID        string    "json:\"id\" graphql:\"id\""
-	Name      string    "json:\"name\" graphql:\"name\""
-	CreatedAt time.Time "json:\"createdAt\" graphql:\"createdAt\""
+	ID             string    "json:\"id\" graphql:\"id\""
+	Name           string    "json:\"name\" graphql:\"name\""
+	CreatedAt      time.Time "json:\"createdAt\" graphql:\"createdAt\""
+	CloudProfileID *string   "json:\"cloudProfileId,omitempty\" graphql:\"cloudProfileId\""
 }
 
 func (t *ProjectFragment) GetID() string {
@@ -203,6 +205,12 @@ func (t *ProjectFragment) GetCreatedAt() *time.Time {
 		t = &ProjectFragment{}
 	}
 	return &t.CreatedAt
+}
+func (t *ProjectFragment) GetCloudProfileID() *string {
+	if t == nil {
+		t = &ProjectFragment{}
+	}
+	return t.CloudProfileID
 }
 
 type AccountFragment struct {
@@ -266,6 +274,17 @@ func (t *GetAccounts_Me) GetTeams() []*GetAccounts_Me_Teams {
 	return t.Teams
 }
 
+type GetCloudProfile struct {
+	CloudProfile *CloudProfileFragment "json:\"cloudProfile,omitempty\" graphql:\"cloudProfile\""
+}
+
+func (t *GetCloudProfile) GetCloudProfile() *CloudProfileFragment {
+	if t == nil {
+		t = &GetCloudProfile{}
+	}
+	return t.CloudProfile
+}
+
 type GetCloudProfiles struct {
 	CloudProfiles []*CloudProfileFragment "json:\"cloudProfiles\" graphql:\"cloudProfiles\""
 }
@@ -319,6 +338,31 @@ func (t *GetAccounts) GetMe() *GetAccounts_Me {
 		t = &GetAccounts{}
 	}
 	return &t.Me
+}
+
+const GetCloudProfileDocument = `query GetCloudProfile ($where: CloudProfileWhereUniqueInput!) {
+	cloudProfile(where: $where) {
+		... CloudProfileFragment
+	}
+}
+fragment CloudProfileFragment on CloudProfile {
+	id
+	name
+	provider
+}
+`
+
+func (c *Client) GetCloudProfile(ctx context.Context, where CloudProfileWhereUniqueInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfile, error) {
+	vars := map[string]interface{}{
+		"where": where,
+	}
+
+	var res GetCloudProfile
+	if err := c.Client.Post(ctx, "GetCloudProfile", GetCloudProfileDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 const GetCloudProfilesDocument = `query GetCloudProfiles ($whereAccount: AccountWhereUniqueInput!, $whereCloudProfile: CloudProfileWhereInput) {
@@ -382,6 +426,7 @@ fragment ProjectFragment on Project {
 	id
 	name
 	createdAt
+	cloudProfileId
 }
 `
 
@@ -408,6 +453,7 @@ fragment ProjectFragment on Project {
 	id
 	name
 	createdAt
+	cloudProfileId
 }
 `
 

@@ -380,6 +380,7 @@ type Application struct {
 	CloudProfileID           *string                 `json:"cloudProfileId"`
 	CloudProviderAppConfigID *string                 `json:"cloudProviderAppConfigId"`
 	ProjectID                *string                 `json:"projectId"`
+	ContainerRegistryID      *string                 `json:"containerRegistryId"`
 	CreatedAt                time.Time               `json:"createdAt"`
 	UpdatedAt                time.Time               `json:"updatedAt"`
 	Count                    *ApplicationCount       `json:"_count"`
@@ -388,6 +389,7 @@ type Application struct {
 	CloudProviderAppConfig   *CloudProviderAppConfig `json:"cloudProviderAppConfig"`
 	Project                  *Project                `json:"project"`
 	VpcAttachment            *VPCAttachment          `json:"vpcAttachment"`
+	ContainerRegistry        *ContainerRegistry      `json:"containerRegistry"`
 	AttachedContainer        *ApplicationContainer   `json:"attachedContainer"`
 	Containers               []*ApplicationContainer `json:"containers"`
 	EnvironmentVariables     []*EnvironmentVariable  `json:"environmentVariables"`
@@ -488,6 +490,7 @@ type ApplicationOrderByWithRelationInput struct {
 	CloudProfileID           *SortOrder                                         `json:"cloudProfileId,omitempty"`
 	CloudProviderAppConfigID *SortOrder                                         `json:"cloudProviderAppConfigId,omitempty"`
 	ProjectID                *SortOrder                                         `json:"projectId,omitempty"`
+	ContainerRegistryID      *SortOrder                                         `json:"containerRegistryId,omitempty"`
 	CreatedAt                *SortOrder                                         `json:"createdAt,omitempty"`
 	UpdatedAt                *SortOrder                                         `json:"updatedAt,omitempty"`
 	Account                  *AccountOrderByWithRelationInput                   `json:"account,omitempty"`
@@ -495,6 +498,7 @@ type ApplicationOrderByWithRelationInput struct {
 	CloudProviderAppConfig   *CloudProviderAppConfigOrderByWithRelationInput    `json:"cloudProviderAppConfig,omitempty"`
 	Project                  *ProjectOrderByWithRelationInput                   `json:"project,omitempty"`
 	VpcAttachment            *VPCAttachmentOrderByWithRelationInput             `json:"vpcAttachment,omitempty"`
+	ContainerRegistry        *ContainerRegistryOrderByWithRelationInput         `json:"containerRegistry,omitempty"`
 	AttachedContainer        *ApplicationContainerOrderByWithRelationInput      `json:"attachedContainer,omitempty"`
 	Containers               *ApplicationContainerOrderByRelationAggregateInput `json:"containers,omitempty"`
 	EnvironmentVariables     *EnvironmentVariableOrderByRelationAggregateInput  `json:"environmentVariables,omitempty"`
@@ -518,6 +522,7 @@ type ApplicationWhereInput struct {
 	CloudProfileID           *StringNullableFilter                   `json:"cloudProfileId,omitempty"`
 	CloudProviderAppConfigID *StringNullableFilter                   `json:"cloudProviderAppConfigId,omitempty"`
 	ProjectID                *StringNullableFilter                   `json:"projectId,omitempty"`
+	ContainerRegistryID      *StringNullableFilter                   `json:"containerRegistryId,omitempty"`
 	CreatedAt                *DateTimeFilter                         `json:"createdAt,omitempty"`
 	UpdatedAt                *DateTimeFilter                         `json:"updatedAt,omitempty"`
 	Account                  *AccountRelationFilter                  `json:"account,omitempty"`
@@ -525,6 +530,7 @@ type ApplicationWhereInput struct {
 	CloudProviderAppConfig   *CloudProviderAppConfigRelationFilter   `json:"cloudProviderAppConfig,omitempty"`
 	Project                  *ProjectRelationFilter                  `json:"project,omitempty"`
 	VpcAttachment            *VPCAttachmentRelationFilter            `json:"vpcAttachment,omitempty"`
+	ContainerRegistry        *ContainerRegistryRelationFilter        `json:"containerRegistry,omitempty"`
 	AttachedContainer        *ApplicationContainerRelationFilter     `json:"attachedContainer,omitempty"`
 	Containers               *ApplicationContainerListRelationFilter `json:"containers,omitempty"`
 	EnvironmentVariables     *EnvironmentVariableListRelationFilter  `json:"environmentVariables,omitempty"`
@@ -1347,11 +1353,17 @@ type ContainerRegistry struct {
 	CloudProviderContainerRegistryConfigID *string                               `json:"cloudProviderContainerRegistryConfigId"`
 	CreatedAt                              time.Time                             `json:"createdAt"`
 	UpdatedAt                              time.Time                             `json:"updatedAt"`
+	Count                                  *ContainerRegistryCount               `json:"_count"`
 	Account                                Account                               `json:"account"`
 	CloudProfile                           *CloudProfile                         `json:"cloudProfile"`
 	Project                                *Project                              `json:"project"`
+	Applications                           []*Application                        `json:"applications"`
 	CloudProviderContainerRegistryConfig   *CloudProviderContainerRegistryConfig `json:"cloudProviderContainerRegistryConfig"`
 	Info                                   ContainerRegistryInfo                 `json:"info"`
+}
+
+type ContainerRegistryCount struct {
+	Applications int64 `json:"applications"`
 }
 
 type ContainerRegistryInfo struct {
@@ -1384,6 +1396,7 @@ type ContainerRegistryOrderByWithRelationInput struct {
 	Account                                *AccountOrderByWithRelationInput                              `json:"account,omitempty"`
 	CloudProfile                           *CloudProfileOrderByWithRelationInput                         `json:"cloudProfile,omitempty"`
 	Project                                *ProjectOrderByWithRelationInput                              `json:"project,omitempty"`
+	Applications                           *ApplicationOrderByRelationAggregateInput                     `json:"applications,omitempty"`
 	CloudProviderContainerRegistryConfig   *CloudProviderContainerRegistryConfigOrderByWithRelationInput `json:"cloudProviderContainerRegistryConfig,omitempty"`
 }
 
@@ -1408,6 +1421,7 @@ type ContainerRegistryWhereInput struct {
 	Account                                *AccountRelationFilter                              `json:"account,omitempty"`
 	CloudProfile                           *CloudProfileRelationFilter                         `json:"cloudProfile,omitempty"`
 	Project                                *ProjectRelationFilter                              `json:"project,omitempty"`
+	Applications                           *ApplicationListRelationFilter                      `json:"applications,omitempty"`
 	CloudProviderContainerRegistryConfig   *CloudProviderContainerRegistryConfigRelationFilter `json:"cloudProviderContainerRegistryConfig,omitempty"`
 }
 
@@ -1457,6 +1471,7 @@ type CreateApplicationInput struct {
 	Name                   string                          `json:"name"`
 	CloudProfileID         string                          `json:"cloudProfileId"`
 	CloudProviderAppConfig CreateCloudProviderAppConfig    `json:"cloudProviderAppConfig"`
+	ContainerRegistryID    *string                         `json:"containerRegistryId,omitempty"`
 	Container              CreateApplicationContainerInput `json:"container"`
 	EnvironmentVariables   []*EnvironmentVariableInput     `json:"environmentVariables,omitempty"`
 }
@@ -4344,6 +4359,7 @@ const (
 	ApplicationScalarFieldEnumCloudProfileID           ApplicationScalarFieldEnum = "cloudProfileId"
 	ApplicationScalarFieldEnumCloudProviderAppConfigID ApplicationScalarFieldEnum = "cloudProviderAppConfigId"
 	ApplicationScalarFieldEnumProjectID                ApplicationScalarFieldEnum = "projectId"
+	ApplicationScalarFieldEnumContainerRegistryID      ApplicationScalarFieldEnum = "containerRegistryId"
 	ApplicationScalarFieldEnumCreatedAt                ApplicationScalarFieldEnum = "createdAt"
 	ApplicationScalarFieldEnumUpdatedAt                ApplicationScalarFieldEnum = "updatedAt"
 )
@@ -4356,13 +4372,14 @@ var AllApplicationScalarFieldEnum = []ApplicationScalarFieldEnum{
 	ApplicationScalarFieldEnumCloudProfileID,
 	ApplicationScalarFieldEnumCloudProviderAppConfigID,
 	ApplicationScalarFieldEnumProjectID,
+	ApplicationScalarFieldEnumContainerRegistryID,
 	ApplicationScalarFieldEnumCreatedAt,
 	ApplicationScalarFieldEnumUpdatedAt,
 }
 
 func (e ApplicationScalarFieldEnum) IsValid() bool {
 	switch e {
-	case ApplicationScalarFieldEnumID, ApplicationScalarFieldEnumName, ApplicationScalarFieldEnumStatus, ApplicationScalarFieldEnumAccountID, ApplicationScalarFieldEnumCloudProfileID, ApplicationScalarFieldEnumCloudProviderAppConfigID, ApplicationScalarFieldEnumProjectID, ApplicationScalarFieldEnumCreatedAt, ApplicationScalarFieldEnumUpdatedAt:
+	case ApplicationScalarFieldEnumID, ApplicationScalarFieldEnumName, ApplicationScalarFieldEnumStatus, ApplicationScalarFieldEnumAccountID, ApplicationScalarFieldEnumCloudProfileID, ApplicationScalarFieldEnumCloudProviderAppConfigID, ApplicationScalarFieldEnumProjectID, ApplicationScalarFieldEnumContainerRegistryID, ApplicationScalarFieldEnumCreatedAt, ApplicationScalarFieldEnumUpdatedAt:
 		return true
 	}
 	return false
