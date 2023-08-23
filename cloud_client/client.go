@@ -6,6 +6,7 @@ import (
 	"github.com/deploifai/sdk-go/api/generated"
 	"github.com/deploifai/sdk-go/cloud_client/aws"
 	"github.com/deploifai/sdk-go/cloud_client/azure"
+	"github.com/deploifai/sdk-go/cloud_client/gcp"
 	"github.com/deploifai/sdk-go/cloud_client/implementable"
 )
 
@@ -23,8 +24,8 @@ func NewCloudClientWrapper(ctx context.Context, api api.Provider, provider gener
 		client := azure.NewCloudClient(ctx, api)
 		wrapper.CloudClient = &client
 	case generated.CloudProviderGcp:
-		//client := NewGCPCloudClient(ctx, api)
-		//wrapper.CloudClient = &client
+		client := gcp.NewCloudClient(ctx, api)
+		wrapper.CloudClient = &client
 	}
 
 	wrapper.provider = provider
