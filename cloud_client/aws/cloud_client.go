@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/deploifai/sdk-go/api"
 	"github.com/deploifai/sdk-go/cloud_client/aws/data_storage"
-	"github.com/deploifai/sdk-go/cloud_client/aws/root_client"
+	"github.com/deploifai/sdk-go/cloud_client/aws/root_provider"
 	"github.com/deploifai/sdk-go/cloud_client/implementable"
 	"github.com/deploifai/sdk-go/cloud_client/utils"
 )
@@ -31,10 +31,10 @@ func (r *CloudClient) NewDataStorageClient(dataStorageId string, dataStorageCont
 	bucket := dataStorageContainer.GetCloudName()
 	awsConfig := dataStorage.GetCloudProviderYodaConfig().GetAwsConfig()
 
-	rootClient, err := root_client.NewRootClient(
+	rootProvider, err := root_provider.New(
 		r.ctx,
-		root_client.Credentials{
-			IAM: root_client.IAMCredentials{
+		root_provider.Credentials{
+			IAM: root_provider.IAMCredentials{
 				AccessKey:       *awsConfig.GetAwsAccessKey(),
 				SecretAccessKey: *awsConfig.GetAwsSecretAccessKey()},
 		},
@@ -43,5 +43,5 @@ func (r *CloudClient) NewDataStorageClient(dataStorageId string, dataStorageCont
 		return dataStorageClient, err
 	}
 
-	return data_storage.New(r.ctx, &rootClient, *bucket), nil
+	return data_storage.New(r.ctx, &rootProvider, *bucket), nil
 }

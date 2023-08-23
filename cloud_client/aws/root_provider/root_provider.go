@@ -1,4 +1,4 @@
-package root_client
+package root_provider
 
 import (
 	"context"
@@ -16,13 +16,13 @@ type Credentials struct {
 	IAM IAMCredentials
 }
 
-type RootClient struct {
+type RootProvider struct {
 	Config aws.Config
 }
 
-func NewRootClient(ctx context.Context, cred Credentials, region string) (RootClient, error) {
+func New(ctx context.Context, cred Credentials, region string) (RootProvider, error) {
 
-	rootClient := RootClient{}
+	rootClient := RootProvider{}
 
 	credentialsProvider := credentials.NewStaticCredentialsProvider(cred.IAM.AccessKey, cred.IAM.SecretAccessKey, "")
 

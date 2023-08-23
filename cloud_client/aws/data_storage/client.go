@@ -3,7 +3,7 @@ package data_storage
 import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/deploifai/sdk-go/cloud_client/aws/root_client"
+	"github.com/deploifai/sdk-go/cloud_client/aws/root_provider"
 	"io"
 	"os"
 )
@@ -16,9 +16,9 @@ type Client struct {
 	bucket  string
 }
 
-func New(ctx context.Context, rootClient *root_client.RootClient, bucket string) *Client {
+func New(ctx context.Context, rootProvider *root_provider.RootProvider, bucket string) *Client {
 
-	service := s3.NewFromConfig(rootClient.Config)
+	service := s3.NewFromConfig(rootProvider.Config)
 
 	return &Client{ctx: ctx, service: *service, bucket: bucket}
 }
