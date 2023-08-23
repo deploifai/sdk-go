@@ -1,3 +1,5 @@
 .idea/
 schema.gql
 coverage.out
+
+.DS_Store
