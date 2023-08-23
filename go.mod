@@ -3,6 +3,7 @@ module github.com/deploifai/sdk-go
 go 1.20
 
 require (
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.1.0
 	github.com/Yamashou/gqlgenc v0.14.0
 	github.com/aws/aws-sdk-go-v2 v1.21.0
 	github.com/aws/aws-sdk-go-v2/config v1.18.36
@@ -12,6 +13,8 @@ require (
 
 require (
 	github.com/99designs/gqlgen v0.17.35 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.6.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.13 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.11 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.41 // indirect
@@ -27,4 +30,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.21.5 // indirect
 	github.com/aws/smithy-go v1.14.2 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.8 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 )

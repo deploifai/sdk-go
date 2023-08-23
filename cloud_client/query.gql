@@ -4,7 +4,7 @@ fragment CloudProviderYodaConfigFragment on CloudProviderYodaConfig {
         ...AWSYodaConfigFragment
     }
     azureConfig {
-        id
+        ...AzureYodaConfigFragment
     }
     gcpConfig {
         id

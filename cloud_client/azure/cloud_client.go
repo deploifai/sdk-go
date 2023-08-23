@@ -1,10 +1,9 @@
-package aws
+package azure
 
 import (
 	"context"
 	"github.com/deploifai/sdk-go/api"
-	"github.com/deploifai/sdk-go/cloud_client/aws/data_storage"
-	"github.com/deploifai/sdk-go/cloud_client/aws/root_client"
+	"github.com/deploifai/sdk-go/cloud_client/azure/data_storage"
 	"github.com/deploifai/sdk-go/cloud_client/implementable"
 	"github.com/deploifai/sdk-go/cloud_client/utils"
 )
@@ -28,20 +27,9 @@ func (r *CloudClient) NewDataStorageClient(dataStorageId string, dataStorageCont
 		return dataStorageClient, err
 	}
 
-	bucket := dataStorageContainer.GetCloudName()
-	awsConfig := dataStorage.GetCloudProviderYodaConfig().GetAwsConfig()
+	container := dataStorageContainer.GetCloudName()
+	azureConfig := dataStorage.GetCloudProviderYodaConfig().GetAzureConfig()
 
-	rootClient, err := root_client.NewRootClient(
-		r.ctx,
-		root_client.Credentials{
-			IAM: root_client.IAMCredentials{
-				AccessKey:       *awsConfig.GetAwsAccessKey(),
-				SecretAccessKey: *awsConfig.GetAwsSecretAccessKey()},
-		},
-		awsConfig.GetAwsRegion())
-	if err != nil {
-		return dataStorageClient, err
-	}
+	return data_storage.New(r.ctx, *azureConfig.GetStorageAccount(), *azureConfig.GetStorageAccessKey(), *container)
 
-	return data_storage.New(r.ctx, &rootClient, *bucket), nil
 }

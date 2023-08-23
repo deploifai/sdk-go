@@ -16,11 +16,15 @@ query GetDataStorage($where: DataStorageWhereUniqueInput!) {
     }
 }
 
+fragment DataStorageContainerFragment on DataStorageContainer {
+    id
+    directoryName
+    cloudName
+    dataStorageId
+}
+
 query GetDataStorageContainer($where: DataStorageContainerWhereUniqueInput!) {
     dataStorageContainer(where: $where) {
-        id
-        directoryName
-        cloudName
-        dataStorageId
+        ...DataStorageContainerFragment
     }
 }
