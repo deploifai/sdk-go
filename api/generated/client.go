@@ -14,6 +14,8 @@ type GQLClient interface {
 	GetCloudProfile(ctx context.Context, where CloudProfileWhereUniqueInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfile, error)
 	GetCloudProfiles(ctx context.Context, whereAccount AccountWhereUniqueInput, whereCloudProfile *CloudProfileWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfiles, error)
 	CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateCloudProfileInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error)
+	GetDataStorage(ctx context.Context, where DataStorageWhereUniqueInput, interceptors ...clientv2.RequestInterceptor) (*GetDataStorage, error)
+	GetDataStorageContainer(ctx context.Context, where DataStorageContainerWhereUniqueInput, interceptors ...clientv2.RequestInterceptor) (*GetDataStorageContainer, error)
 	GetProjects(ctx context.Context, whereAccount AccountWhereUniqueInput, whereProject *ProjectWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetProjects, error)
 	CreateProject(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateProjectInput, interceptors ...clientv2.RequestInterceptor) (*CreateProject, error)
 	GetAccounts(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*GetAccounts, error)
@@ -156,6 +158,70 @@ type Mutation struct {
 	AddGithubAppInstallation        *GithubAppInstallation    "json:\"addGithubAppInstallation,omitempty\" graphql:\"addGithubAppInstallation\""
 	RemoveGithubAppInstallation     bool                      "json:\"removeGithubAppInstallation\" graphql:\"removeGithubAppInstallation\""
 }
+type AWSYodaConfigFragment struct {
+	ID                 string  "json:\"id\" graphql:\"id\""
+	AwsAccessKey       *string "json:\"awsAccessKey,omitempty\" graphql:\"awsAccessKey\""
+	AwsSecretAccessKey *string "json:\"awsSecretAccessKey,omitempty\" graphql:\"awsSecretAccessKey\""
+	AwsRegion          string  "json:\"awsRegion\" graphql:\"awsRegion\""
+}
+
+func (t *AWSYodaConfigFragment) GetID() string {
+	if t == nil {
+		t = &AWSYodaConfigFragment{}
+	}
+	return t.ID
+}
+func (t *AWSYodaConfigFragment) GetAwsAccessKey() *string {
+	if t == nil {
+		t = &AWSYodaConfigFragment{}
+	}
+	return t.AwsAccessKey
+}
+func (t *AWSYodaConfigFragment) GetAwsSecretAccessKey() *string {
+	if t == nil {
+		t = &AWSYodaConfigFragment{}
+	}
+	return t.AwsSecretAccessKey
+}
+func (t *AWSYodaConfigFragment) GetAwsRegion() string {
+	if t == nil {
+		t = &AWSYodaConfigFragment{}
+	}
+	return t.AwsRegion
+}
+
+type CloudProviderYodaConfigFragment struct {
+	ID          string                                       "json:\"id\" graphql:\"id\""
+	AwsConfig   *AWSYodaConfigFragment                       "json:\"awsConfig,omitempty\" graphql:\"awsConfig\""
+	AzureConfig *CloudProviderYodaConfigFragment_AzureConfig "json:\"azureConfig,omitempty\" graphql:\"azureConfig\""
+	GcpConfig   *CloudProviderYodaConfigFragment_GcpConfig   "json:\"gcpConfig,omitempty\" graphql:\"gcpConfig\""
+}
+
+func (t *CloudProviderYodaConfigFragment) GetID() string {
+	if t == nil {
+		t = &CloudProviderYodaConfigFragment{}
+	}
+	return t.ID
+}
+func (t *CloudProviderYodaConfigFragment) GetAwsConfig() *AWSYodaConfigFragment {
+	if t == nil {
+		t = &CloudProviderYodaConfigFragment{}
+	}
+	return t.AwsConfig
+}
+func (t *CloudProviderYodaConfigFragment) GetAzureConfig() *CloudProviderYodaConfigFragment_AzureConfig {
+	if t == nil {
+		t = &CloudProviderYodaConfigFragment{}
+	}
+	return t.AzureConfig
+}
+func (t *CloudProviderYodaConfigFragment) GetGcpConfig() *CloudProviderYodaConfigFragment_GcpConfig {
+	if t == nil {
+		t = &CloudProviderYodaConfigFragment{}
+	}
+	return t.GcpConfig
+}
+
 type CloudProfileFragment struct {
 	ID       string        "json:\"id\" graphql:\"id\""
 	Name     string        "json:\"name\" graphql:\"name\""
@@ -179,6 +245,38 @@ func (t *CloudProfileFragment) GetProvider() *CloudProvider {
 		t = &CloudProfileFragment{}
 	}
 	return &t.Provider
+}
+
+type DataStorageFragment struct {
+	ID                      string                           "json:\"id\" graphql:\"id\""
+	Name                    string                           "json:\"name\" graphql:\"name\""
+	CloudProfile            *CloudProfileFragment            "json:\"cloudProfile,omitempty\" graphql:\"cloudProfile\""
+	CloudProviderYodaConfig *CloudProviderYodaConfigFragment "json:\"cloudProviderYodaConfig,omitempty\" graphql:\"cloudProviderYodaConfig\""
+}
+
+func (t *DataStorageFragment) GetID() string {
+	if t == nil {
+		t = &DataStorageFragment{}
+	}
+	return t.ID
+}
+func (t *DataStorageFragment) GetName() string {
+	if t == nil {
+		t = &DataStorageFragment{}
+	}
+	return t.Name
+}
+func (t *DataStorageFragment) GetCloudProfile() *CloudProfileFragment {
+	if t == nil {
+		t = &DataStorageFragment{}
+	}
+	return t.CloudProfile
+}
+func (t *DataStorageFragment) GetCloudProviderYodaConfig() *CloudProviderYodaConfigFragment {
+	if t == nil {
+		t = &DataStorageFragment{}
+	}
+	return t.CloudProviderYodaConfig
 }
 
 type ProjectFragment struct {
@@ -245,6 +343,104 @@ func (t *AccountFragment) GetPicture() *string {
 	return t.Picture
 }
 
+type CloudProviderYodaConfigFragment_AzureConfig struct {
+	ID string "json:\"id\" graphql:\"id\""
+}
+
+func (t *CloudProviderYodaConfigFragment_AzureConfig) GetID() string {
+	if t == nil {
+		t = &CloudProviderYodaConfigFragment_AzureConfig{}
+	}
+	return t.ID
+}
+
+type CloudProviderYodaConfigFragment_GcpConfig struct {
+	ID string "json:\"id\" graphql:\"id\""
+}
+
+func (t *CloudProviderYodaConfigFragment_GcpConfig) GetID() string {
+	if t == nil {
+		t = &CloudProviderYodaConfigFragment_GcpConfig{}
+	}
+	return t.ID
+}
+
+type DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_AzureConfig struct {
+	ID string "json:\"id\" graphql:\"id\""
+}
+
+func (t *DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_AzureConfig) GetID() string {
+	if t == nil {
+		t = &DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_AzureConfig{}
+	}
+	return t.ID
+}
+
+type DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_GcpConfig struct {
+	ID string "json:\"id\" graphql:\"id\""
+}
+
+func (t *DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_GcpConfig) GetID() string {
+	if t == nil {
+		t = &DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_GcpConfig{}
+	}
+	return t.ID
+}
+
+type GetDataStorage_DataStorage_DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_AzureConfig struct {
+	ID string "json:\"id\" graphql:\"id\""
+}
+
+func (t *GetDataStorage_DataStorage_DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_AzureConfig) GetID() string {
+	if t == nil {
+		t = &GetDataStorage_DataStorage_DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_AzureConfig{}
+	}
+	return t.ID
+}
+
+type GetDataStorage_DataStorage_DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_GcpConfig struct {
+	ID string "json:\"id\" graphql:\"id\""
+}
+
+func (t *GetDataStorage_DataStorage_DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_GcpConfig) GetID() string {
+	if t == nil {
+		t = &GetDataStorage_DataStorage_DataStorageFragment_CloudProviderYodaConfig_CloudProviderYodaConfigFragment_GcpConfig{}
+	}
+	return t.ID
+}
+
+type GetDataStorageContainer_DataStorageContainer struct {
+	ID            string  "json:\"id\" graphql:\"id\""
+	DirectoryName string  "json:\"directoryName\" graphql:\"directoryName\""
+	CloudName     *string "json:\"cloudName,omitempty\" graphql:\"cloudName\""
+	DataStorageID string  "json:\"dataStorageId\" graphql:\"dataStorageId\""
+}
+
+func (t *GetDataStorageContainer_DataStorageContainer) GetID() string {
+	if t == nil {
+		t = &GetDataStorageContainer_DataStorageContainer{}
+	}
+	return t.ID
+}
+func (t *GetDataStorageContainer_DataStorageContainer) GetDirectoryName() string {
+	if t == nil {
+		t = &GetDataStorageContainer_DataStorageContainer{}
+	}
+	return t.DirectoryName
+}
+func (t *GetDataStorageContainer_DataStorageContainer) GetCloudName() *string {
+	if t == nil {
+		t = &GetDataStorageContainer_DataStorageContainer{}
+	}
+	return t.CloudName
+}
+func (t *GetDataStorageContainer_DataStorageContainer) GetDataStorageID() string {
+	if t == nil {
+		t = &GetDataStorageContainer_DataStorageContainer{}
+	}
+	return t.DataStorageID
+}
+
 type GetAccounts_Me_Teams struct {
 	Account *AccountFragment "json:\"account\" graphql:\"account\""
 }
@@ -305,6 +501,28 @@ func (t *CreateCloudProfile) GetCreateCloudProfile() *CloudProfileFragment {
 		t = &CreateCloudProfile{}
 	}
 	return t.CreateCloudProfile
+}
+
+type GetDataStorage struct {
+	DataStorage *DataStorageFragment "json:\"dataStorage,omitempty\" graphql:\"dataStorage\""
+}
+
+func (t *GetDataStorage) GetDataStorage() *DataStorageFragment {
+	if t == nil {
+		t = &GetDataStorage{}
+	}
+	return t.DataStorage
+}
+
+type GetDataStorageContainer struct {
+	DataStorageContainer *GetDataStorageContainer_DataStorageContainer "json:\"dataStorageContainer,omitempty\" graphql:\"dataStorageContainer\""
+}
+
+func (t *GetDataStorageContainer) GetDataStorageContainer() *GetDataStorageContainer_DataStorageContainer {
+	if t == nil {
+		t = &GetDataStorageContainer{}
+	}
+	return t.DataStorageContainer
 }
 
 type GetProjects struct {
@@ -411,6 +629,82 @@ func (c *Client) CreateCloudProfile(ctx context.Context, whereAccount AccountWhe
 
 	var res CreateCloudProfile
 	if err := c.Client.Post(ctx, "CreateCloudProfile", CreateCloudProfileDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetDataStorageDocument = `query GetDataStorage ($where: DataStorageWhereUniqueInput!) {
+	dataStorage(where: $where) {
+		... DataStorageFragment
+	}
+}
+fragment DataStorageFragment on DataStorage {
+	id
+	name
+	cloudProfile {
+		... CloudProfileFragment
+	}
+	cloudProviderYodaConfig {
+		... CloudProviderYodaConfigFragment
+	}
+}
+fragment CloudProfileFragment on CloudProfile {
+	id
+	name
+	provider
+}
+fragment CloudProviderYodaConfigFragment on CloudProviderYodaConfig {
+	id
+	awsConfig {
+		... AWSYodaConfigFragment
+	}
+	azureConfig {
+		id
+	}
+	gcpConfig {
+		id
+	}
+}
+fragment AWSYodaConfigFragment on AWSYodaConfig {
+	id
+	awsAccessKey
+	awsSecretAccessKey
+	awsRegion
+}
+`
+
+func (c *Client) GetDataStorage(ctx context.Context, where DataStorageWhereUniqueInput, interceptors ...clientv2.RequestInterceptor) (*GetDataStorage, error) {
+	vars := map[string]interface{}{
+		"where": where,
+	}
+
+	var res GetDataStorage
+	if err := c.Client.Post(ctx, "GetDataStorage", GetDataStorageDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetDataStorageContainerDocument = `query GetDataStorageContainer ($where: DataStorageContainerWhereUniqueInput!) {
+	dataStorageContainer(where: $where) {
+		id
+		directoryName
+		cloudName
+		dataStorageId
+	}
+}
+`
+
+func (c *Client) GetDataStorageContainer(ctx context.Context, where DataStorageContainerWhereUniqueInput, interceptors ...clientv2.RequestInterceptor) (*GetDataStorageContainer, error) {
+	vars := map[string]interface{}{
+		"where": where,
+	}
+
+	var res GetDataStorageContainer
+	if err := c.Client.Post(ctx, "GetDataStorageContainer", GetDataStorageContainerDocument, &res, vars, interceptors...); err != nil {
 		return nil, err
 	}
 

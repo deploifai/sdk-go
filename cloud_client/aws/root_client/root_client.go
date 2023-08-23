@@ -1,4 +1,4 @@
-package aws
+package root_client
 
 import (
 	"context"
@@ -16,15 +16,15 @@ type Credentials struct {
 	IAM IAMCredentials
 }
 
-type Client struct {
+type RootClient struct {
 	Config aws.Config
 }
 
-func CreateClient(ctx context.Context, creds Credentials, region string) (Client, error) {
+func NewRootClient(ctx context.Context, cred Credentials, region string) (RootClient, error) {
 
-	client := Client{}
+	rootClient := RootClient{}
 
-	credentialsProvider := credentials.NewStaticCredentialsProvider(creds.IAM.AccessKey, creds.IAM.SecretAccessKey, "")
+	credentialsProvider := credentials.NewStaticCredentialsProvider(cred.IAM.AccessKey, cred.IAM.SecretAccessKey, "")
 
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
@@ -32,10 +32,10 @@ func CreateClient(ctx context.Context, creds Credentials, region string) (Client
 		config.WithRegion(region),
 	)
 	if err != nil {
-		return client, err
+		return rootClient, err
 	}
 
-	client.Config = cfg
+	rootClient.Config = cfg
 
-	return client, nil
+	return rootClient, nil
 }
