@@ -4,8 +4,11 @@ import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/deploifai/sdk-go/cloud_client/aws/root_provider"
+	"github.com/deploifai/sdk-go/cloud_client/implementable"
+	"github.com/deploifai/sdk-go/cloud_client/utils"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 // Client is a wrapper around the AWS S3 client.
@@ -71,4 +74,50 @@ func (r *Client) DownloadFile(remoteObjectKey string, destAbsPath string) (inter
 	}
 
 	return *object, nil
+}
+
+func (r *Client) ListObjects(input *implementable.ListObjectsInput) (response implementable.ListObjectsResponse, err error) {
+
+	var prefix *string = nil
+	var maxKeys int32 = utils.DataStorageListObjectsMaxResults
+	var startAfter *string = nil
+	delimiter := utils.DataStorageObjectDelimiter
+
+	if input != nil {
+		prefix = input.Prefix
+		if input.MaxResults != nil {
+			maxKeys = int32(*input.MaxResults)
+		}
+		if input.Cursor != nil {
+			startAfter = input.Cursor
+		}
+	}
+
+	objectsInput := s3.ListObjectsV2Input{
+		Bucket:     &r.bucket,
+		Prefix:     prefix,
+		MaxKeys:    maxKeys,
+		StartAfter: startAfter,
+		Delimiter:  &delimiter,
+	}
+
+	resp, err := r.service.ListObjectsV2(r.ctx, &objectsInput)
+	if err != nil {
+		return response, err
+	}
+
+	for _, object := range resp.Contents {
+		response.Objects = append(response.Objects, implementable.DataStorageObject{
+			Key:  *object.Key,
+			Name: filepath.Base(*object.Key),
+		})
+	}
+
+	if resp.IsTruncated && len(response.Objects) > 0 {
+		if len(response.Objects) > 0 {
+			response.Cursor = &response.Objects[len(response.Objects)-1].Key
+		}
+	}
+
+	return response, nil
 }

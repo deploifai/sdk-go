@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/deploifai/sdk-go/cloud_client/implementable"
+	"github.com/deploifai/sdk-go/cloud_client/utils"
 	"os"
+	"path/filepath"
 )
 
 // Client is a wrapper around the Azure Blob Storage client.
@@ -77,6 +80,50 @@ func (r *Client) DownloadFile(remoteObjectKey string, destAbsPath string) (inter
 	response, err := r.service.DownloadFile(r.ctx, r.container, remoteObjectKey, file, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	return response, nil
+}
+
+func (r *Client) ListObjects(input *implementable.ListObjectsInput) (response implementable.ListObjectsResponse, err error) {
+
+	var marker *string = nil
+	var maxResults int32 = utils.DataStorageListObjectsMaxResults
+	var prefix *string = nil
+
+	if input != nil {
+		marker = input.Cursor
+		if input.MaxResults != nil {
+			maxResults = int32(*input.MaxResults)
+		}
+		prefix = input.Prefix
+	}
+
+	options := azblob.ListBlobsFlatOptions{
+		Marker:     marker,
+		MaxResults: &maxResults,
+		Prefix:     prefix,
+	}
+
+	pager := r.service.NewListBlobsFlatPager(r.container, &options)
+
+	for pager.More() {
+		resp, err := pager.NextPage(r.ctx)
+		if err != nil {
+			return response, err
+		}
+
+		if len(response.Objects)+len(resp.Segment.BlobItems) > int(maxResults) {
+			break
+		}
+
+		for _, v := range resp.Segment.BlobItems {
+			response.Objects = append(response.Objects, implementable.DataStorageObject{
+				Key:  *v.Name,
+				Name: filepath.Base(*v.Name),
+			})
+		}
+		response.Cursor = resp.NextMarker
 	}
 
 	return response, nil

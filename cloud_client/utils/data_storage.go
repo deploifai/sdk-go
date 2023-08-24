@@ -6,6 +6,11 @@ import (
 	"github.com/deploifai/sdk-go/api/generated"
 )
 
+const (
+	DataStorageObjectDelimiter       = "/"
+	DataStorageListObjectsMaxResults = 1000
+)
+
 func GetDataStorageAndContainer(ctx context.Context, api api.Provider, dataStorageId string, dataStorageContainerId string) (dataStorage generated.DataStorageFragment, dataStorageContainer generated.DataStorageContainerFragment, err error) {
 	dataStorageData, err := api.GetGQLClient().GetDataStorage(ctx, generated.DataStorageWhereUniqueInput{ID: &dataStorageId})
 	if err != nil {
