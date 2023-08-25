@@ -1,9 +1,9 @@
 package implementable
 
 type ListObjectsInput struct {
-	Prefix     *string
-	MaxResults *int
-	Cursor     *string
+	Prefix            *string
+	Cursor            *string
+	MaxResultsPerPage *int
 }
 
 type DataStorageObject struct {
@@ -16,10 +16,12 @@ type ListObjectsResponse struct {
 	Cursor  *string
 }
 
+type ListObjectsPager Pager[interface{}, ListObjectsResponse]
+
 type DataStorageClient interface {
 	UploadFile(srcAbsPath string, remoteObjectKey string) (interface{}, error)
 	DownloadFile(remoteObjectKey string, destAbsPath string) (interface{}, error)
-	ListObjects(input *ListObjectsInput) (ListObjectsResponse, error)
+	NewListObjectsPager(input *ListObjectsInput) ListObjectsPager
 }
 
 type CloudClient interface {

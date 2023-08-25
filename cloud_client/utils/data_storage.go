@@ -7,7 +7,6 @@ import (
 )
 
 const (
-	DataStorageObjectDelimiter       = "/"
 	DataStorageListObjectsMaxResults = 1000
 )
 

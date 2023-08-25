@@ -4,9 +4,13 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	"github.com/deploifai/sdk-go/cloud_client/gcp/root_provider"
+	"github.com/deploifai/sdk-go/cloud_client/implementable"
+	"github.com/deploifai/sdk-go/cloud_client/utils"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 type Client struct {
@@ -73,4 +77,70 @@ func (r *Client) DownloadFile(remoteObjectKey string, destAbsPath string) (inter
 	}
 
 	return result, nil
+}
+
+type pager struct {
+	ctx          context.Context
+	servicePager *storage.ObjectIterator
+	maxResults   int
+	done         bool
+}
+
+func (r *Client) NewListObjectsPager(input *implementable.ListObjectsInput) implementable.ListObjectsPager {
+
+	var prefix = ""
+	var startOffset = ""
+	maxResults := utils.DataStorageListObjectsMaxResults
+
+	if input != nil {
+		if input.Prefix != nil {
+			prefix = *input.Prefix
+		}
+		if input.Cursor != nil {
+			startOffset = *input.Cursor
+		}
+		if input.MaxResultsPerPage != nil {
+			maxResults = *input.MaxResultsPerPage
+		}
+	}
+
+	query := &storage.Query{
+		Prefix: prefix,
+		//Delimiter:   utils.DataStorageObjectDelimiter,
+		StartOffset: startOffset,
+	}
+
+	servicePager := r.service.Bucket(r.bucket).Objects(r.ctx, query)
+
+	return &pager{ctx: r.ctx, servicePager: servicePager, maxResults: maxResults}
+}
+
+func (r *pager) NextPage(_ interface{}) (response implementable.ListObjectsResponse, err error) {
+
+	for {
+		object, err := r.servicePager.Next()
+		if err == iterator.Done {
+			r.done = true
+			break
+		}
+		if err != nil {
+			return implementable.ListObjectsResponse{}, err
+		}
+
+		if len(response.Objects) == r.maxResults {
+			response.Cursor = &object.Name
+			break
+		}
+
+		response.Objects = append(response.Objects, implementable.DataStorageObject{
+			Key:  object.Name,
+			Name: filepath.Base(object.Name),
+		})
+	}
+
+	return response, nil
+}
+
+func (r *pager) More() bool {
+	return !r.done
 }

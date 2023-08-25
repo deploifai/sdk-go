@@ -3,6 +3,7 @@ package data_storage
 import (
 	"context"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/deploifai/sdk-go/cloud_client/implementable"
 	"github.com/deploifai/sdk-go/cloud_client/utils"
@@ -85,7 +86,12 @@ func (r *Client) DownloadFile(remoteObjectKey string, destAbsPath string) (inter
 	return response, nil
 }
 
-func (r *Client) ListObjects(input *implementable.ListObjectsInput) (response implementable.ListObjectsResponse, err error) {
+type pager struct {
+	ctx          context.Context
+	servicePager *runtime.Pager[azblob.ListBlobsFlatResponse]
+}
+
+func (r *Client) NewListObjectsPager(input *implementable.ListObjectsInput) implementable.ListObjectsPager {
 
 	var marker *string = nil
 	var maxResults int32 = utils.DataStorageListObjectsMaxResults
@@ -93,8 +99,8 @@ func (r *Client) ListObjects(input *implementable.ListObjectsInput) (response im
 
 	if input != nil {
 		marker = input.Cursor
-		if input.MaxResults != nil {
-			maxResults = int32(*input.MaxResults)
+		if input.MaxResultsPerPage != nil {
+			maxResults = int32(*input.MaxResultsPerPage)
 		}
 		prefix = input.Prefix
 	}
@@ -105,26 +111,33 @@ func (r *Client) ListObjects(input *implementable.ListObjectsInput) (response im
 		Prefix:     prefix,
 	}
 
-	pager := r.service.NewListBlobsFlatPager(r.container, &options)
+	servicePager := r.service.NewListBlobsFlatPager(r.container, &options)
 
-	for pager.More() {
-		resp, err := pager.NextPage(r.ctx)
-		if err != nil {
-			return response, err
-		}
+	return &pager{ctx: r.ctx, servicePager: servicePager}
 
-		if len(response.Objects)+len(resp.Segment.BlobItems) > int(maxResults) {
-			break
-		}
+}
 
-		for _, v := range resp.Segment.BlobItems {
-			response.Objects = append(response.Objects, implementable.DataStorageObject{
-				Key:  *v.Name,
-				Name: filepath.Base(*v.Name),
-			})
-		}
+func (r *pager) NextPage(_ interface{}) (response implementable.ListObjectsResponse, err error) {
+
+	resp, err := r.servicePager.NextPage(r.ctx)
+	if err != nil {
+		return response, err
+	}
+
+	for _, v := range resp.Segment.BlobItems {
+		response.Objects = append(response.Objects, implementable.DataStorageObject{
+			Key:  *v.Name,
+			Name: filepath.Base(*v.Name),
+		})
+	}
+
+	if resp.NextMarker != nil && *resp.NextMarker != "" {
 		response.Cursor = resp.NextMarker
 	}
 
 	return response, nil
+}
+
+func (r *pager) More() bool {
+	return r.servicePager.More()
 }

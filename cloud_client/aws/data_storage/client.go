@@ -76,48 +76,60 @@ func (r *Client) DownloadFile(remoteObjectKey string, destAbsPath string) (inter
 	return *object, nil
 }
 
-func (r *Client) ListObjects(input *implementable.ListObjectsInput) (response implementable.ListObjectsResponse, err error) {
+type pager struct {
+	ctx          context.Context
+	servicePager *s3.ListObjectsV2Paginator
+}
 
-	var prefix *string = nil
+func (r *Client) NewListObjectsPager(input *implementable.ListObjectsInput) implementable.ListObjectsPager {
+
+	var prefix *string
 	var maxKeys int32 = utils.DataStorageListObjectsMaxResults
-	var startAfter *string = nil
-	delimiter := utils.DataStorageObjectDelimiter
+	var startAfter *string
 
 	if input != nil {
 		prefix = input.Prefix
-		if input.MaxResults != nil {
-			maxKeys = int32(*input.MaxResults)
+		if input.MaxResultsPerPage != nil {
+			maxKeys = int32(*input.MaxResultsPerPage)
 		}
 		if input.Cursor != nil {
 			startAfter = input.Cursor
 		}
 	}
 
-	objectsInput := s3.ListObjectsV2Input{
+	params := &s3.ListObjectsV2Input{
 		Bucket:     &r.bucket,
 		Prefix:     prefix,
 		MaxKeys:    maxKeys,
 		StartAfter: startAfter,
-		Delimiter:  &delimiter,
 	}
 
-	resp, err := r.service.ListObjectsV2(r.ctx, &objectsInput)
+	servicePager := s3.NewListObjectsV2Paginator(&r.service, params)
+
+	return &pager{ctx: r.ctx, servicePager: servicePager}
+}
+
+func (r *pager) NextPage(_ interface{}) (response implementable.ListObjectsResponse, err error) {
+	resp, err := r.servicePager.NextPage(r.ctx)
 	if err != nil {
 		return response, err
 	}
 
-	for _, object := range resp.Contents {
+	for _, v := range resp.Contents {
 		response.Objects = append(response.Objects, implementable.DataStorageObject{
-			Key:  *object.Key,
-			Name: filepath.Base(*object.Key),
+			Key:  *v.Key,
+			Name: filepath.Base(*v.Key),
 		})
 	}
 
-	if resp.IsTruncated && len(response.Objects) > 0 {
-		if len(response.Objects) > 0 {
-			response.Cursor = &response.Objects[len(response.Objects)-1].Key
-		}
+	if resp.IsTruncated {
+		response.Cursor = resp.Contents[len(resp.Contents)-1].Key
 	}
 
 	return response, nil
+
+}
+
+func (r *pager) More() bool {
+	return r.servicePager.HasMorePages()
 }
