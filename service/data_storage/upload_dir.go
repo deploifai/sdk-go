@@ -2,7 +2,6 @@ package data_storage
 
 import (
 	"context"
-	"fmt"
 	"github.com/deploifai/sdk-go/api/generated"
 	"github.com/panjf2000/ants/v2"
 	"io/fs"
@@ -12,20 +11,14 @@ import (
 )
 
 type UploadDirInput struct {
-	srcAbsPath      string
-	remoteObjectKey string
+	srcAbsPath         string
+	remoteObjectPrefix string
 }
 
 type UploadDirOptions struct {
 	// Concurrency is the number of workers to execute.
 	// Default is number of CPUs available.
 	Concurrency *int
-}
-
-type task struct {
-	filePath   string
-	resultChan chan<- interface{}
-	errChan    chan<- error
 }
 
 // UploadDir uploads a local directory to a remote directory in the data storage container.
@@ -58,21 +51,9 @@ func (c *Client) UploadDir(
 		return err
 	}
 
-	// clean the srcAbsPath and remoteObjectKey
+	// clean the srcAbsPath and remoteObjectPrefix
 	srcAbsPath := filepath.Clean(data.srcAbsPath) + "/"
-	remoteObjectKey := filepath.ToSlash(filepath.Clean(data.remoteObjectKey))
-	// remove leading slash if any
-	if len(remoteObjectKey) > 0 && remoteObjectKey[0] == '/' {
-		remoteObjectKey = remoteObjectKey[1:]
-	}
-	// if remoteObjectKey is at root, then it should just be an empty string
-	// if remoteObjectKey is not at root, then it should end with a slash
-	if remoteObjectKey == "." || remoteObjectKey == "" {
-		remoteObjectKey = ""
-	} else {
-		remoteObjectKey = remoteObjectKey + "/"
-	}
-	fmt.Println("root remote object key:", remoteObjectKey)
+	remoteObjectPrefix := cleanRemoteObjectPrefix(data.remoteObjectPrefix)
 
 	filePaths, err := listFiles(srcAbsPath)
 	if err != nil {
@@ -83,19 +64,20 @@ func (c *Client) UploadDir(
 	fileCountChan <- len(filePaths)
 
 	var wg sync.WaitGroup
-	var errChan = make(chan error, len(filePaths))
+	var errChan = make(chan error)
 
 	pool, err := ants.NewPoolWithFunc(poolSize, func(i interface{}) {
-		task := i.(task)
-		remoteObjectKey := remoteObjectKey + filepath.ToSlash(task.filePath[len(srcAbsPath):])
-		fmt.Println("remote object key:", remoteObjectKey)
-		result, err := dataStorageClient.UploadFile(task.filePath, remoteObjectKey)
+		defer wg.Done()
+
+		task := i.(workerTask)
+		remoteObjectKey := remoteObjectPrefix + filepath.ToSlash(task.path[len(srcAbsPath):])
+
+		result, err := dataStorageClient.UploadFile(task.path, remoteObjectKey)
 		if err != nil {
 			task.errChan <- err
 		} else {
 			task.resultChan <- result
 		}
-		wg.Done()
 	})
 	if err != nil {
 		return err
@@ -104,7 +86,7 @@ func (c *Client) UploadDir(
 
 	for _, filePath := range filePaths {
 		wg.Add(1)
-		err := pool.Invoke(task{filePath: filePath, resultChan: resultChan, errChan: errChan})
+		err := pool.Invoke(workerTask{path: filePath, resultChan: resultChan, errChan: errChan})
 		if err != nil {
 			return err
 		}
