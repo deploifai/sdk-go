@@ -25,7 +25,7 @@ type DownloadDirOptions struct {
 
 func (c *Client) DownloadDir(
 	ctx context.Context,
-	where generated.DataStorageContainerWhereUniqueInput,
+	where generated.DataStorageWhereUniqueInput,
 	data DownloadDirInput,
 	fileCountChan chan<- int,
 	resultChan chan<- interface{},

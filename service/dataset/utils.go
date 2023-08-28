@@ -9,20 +9,15 @@ import (
 	"path/filepath"
 )
 
-func getDataStorageAndContainer(ctx context.Context, api api.Provider, where generated.DataStorageContainerWhereUniqueInput) (dataStorage generated.DataStorageFragment, dataStorageContainer generated.DataStorageContainerFragment, err error) {
-	dataStorageContainerData, err := api.GetGQLClient().GetDataStorageContainer(ctx, where)
+func getDataStorageAndContainer(ctx context.Context, api api.Provider, where generated.DataStorageWhereUniqueInput) (dataStorage generated.DataStorageFragment, dataStorageContainer generated.DataStorageContainerFragment, err error) {
+	data, err := api.GetGQLClient().GetDataStorage(ctx, where)
 	if err != nil {
 		return dataStorage, dataStorageContainer, api.ProcessGQLError(err)
 	}
 
-	dataStorageId := dataStorageContainerData.GetDataStorageContainer().GetDataStorageID()
+	dataStorage = *data.GetDataStorage()
 
-	dataStorageData, err := api.GetGQLClient().GetDataStorage(ctx, generated.DataStorageWhereUniqueInput{ID: &dataStorageId})
-	if err != nil {
-		return dataStorage, dataStorageContainer, api.ProcessGQLError(err)
-	}
-
-	return *dataStorageData.GetDataStorage(), *dataStorageContainerData.GetDataStorageContainer(), nil
+	return dataStorage, *dataStorage.GetContainers()[0], nil
 }
 
 func newDataStorageClient(ctx context.Context, api api.Provider, dataStorage generated.DataStorageFragment, dataStorageContainer generated.DataStorageContainerFragment) (implementable.DataStorageClient, error) {

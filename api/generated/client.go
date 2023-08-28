@@ -297,6 +297,7 @@ type DataStorageFragment struct {
 	Projects                []*DataStorageFragment_Projects  "json:\"projects\" graphql:\"projects\""
 	CloudProfile            *CloudProfileFragment            "json:\"cloudProfile,omitempty\" graphql:\"cloudProfile\""
 	CloudProviderYodaConfig *CloudProviderYodaConfigFragment "json:\"cloudProviderYodaConfig,omitempty\" graphql:\"cloudProviderYodaConfig\""
+	Containers              []*DataStorageContainerFragment  "json:\"containers\" graphql:\"containers\""
 }
 
 func (t *DataStorageFragment) GetID() string {
@@ -328,6 +329,12 @@ func (t *DataStorageFragment) GetCloudProviderYodaConfig() *CloudProviderYodaCon
 		t = &DataStorageFragment{}
 	}
 	return t.CloudProviderYodaConfig
+}
+func (t *DataStorageFragment) GetContainers() []*DataStorageContainerFragment {
+	if t == nil {
+		t = &DataStorageFragment{}
+	}
+	return t.Containers
 }
 
 type DataStorageContainerFragment struct {
@@ -681,6 +688,9 @@ fragment DataStorageFragment on DataStorage {
 	cloudProviderYodaConfig {
 		... CloudProviderYodaConfigFragment
 	}
+	containers {
+		... DataStorageContainerFragment
+	}
 }
 fragment CloudProfileFragment on CloudProfile {
 	id
@@ -713,6 +723,12 @@ fragment AzureYodaConfigFragment on AzureYodaConfig {
 fragment GCPYodaConfigFragment on GCPYodaConfig {
 	id
 	gcpServiceAccountKey
+}
+fragment DataStorageContainerFragment on DataStorageContainer {
+	id
+	directoryName
+	cloudName
+	dataStorageId
 }
 `
 
@@ -746,6 +762,9 @@ fragment DataStorageFragment on DataStorage {
 	cloudProviderYodaConfig {
 		... CloudProviderYodaConfigFragment
 	}
+	containers {
+		... DataStorageContainerFragment
+	}
 }
 fragment CloudProfileFragment on CloudProfile {
 	id
@@ -778,6 +797,12 @@ fragment AzureYodaConfigFragment on AzureYodaConfig {
 fragment GCPYodaConfigFragment on GCPYodaConfig {
 	id
 	gcpServiceAccountKey
+}
+fragment DataStorageContainerFragment on DataStorageContainer {
+	id
+	directoryName
+	cloudName
+	dataStorageId
 }
 `
 

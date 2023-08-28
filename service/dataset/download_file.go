@@ -10,7 +10,7 @@ type DownloadFileInput struct {
 	destAbsPath     string
 }
 
-func (c *Client) DownloadFile(ctx context.Context, where generated.DataStorageContainerWhereUniqueInput, data DownloadFileInput) error {
+func (c *Client) DownloadFile(ctx context.Context, where generated.DataStorageWhereUniqueInput, data DownloadFileInput) error {
 
 	dataStorage, dataStorageContainer, err := getDataStorageAndContainer(ctx, c.options.API, where)
 	if err != nil {

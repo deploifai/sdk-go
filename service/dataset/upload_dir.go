@@ -25,7 +25,7 @@ type UploadDirOptions struct {
 // This function is meant to be used as a goroutine.
 func (c *Client) UploadDir(
 	ctx context.Context,
-	where generated.DataStorageContainerWhereUniqueInput,
+	where generated.DataStorageWhereUniqueInput,
 	data UploadDirInput,
 	fileCountChan chan<- int,
 	resultChan chan<- interface{},

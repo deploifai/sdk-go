@@ -10,7 +10,7 @@ type UploadFileInput struct {
 	remoteObjectKey string
 }
 
-func (c *Client) UploadFile(ctx context.Context, where generated.DataStorageContainerWhereUniqueInput, data UploadFileInput) error {
+func (c *Client) UploadFile(ctx context.Context, where generated.DataStorageWhereUniqueInput, data UploadFileInput) error {
 
 	dataStorage, dataStorageContainer, err := getDataStorageAndContainer(ctx, c.options.API, where)
 	if err != nil {
