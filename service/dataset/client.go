@@ -1,4 +1,4 @@
-package data_storage
+package dataset
 
 import (
 	"github.com/deploifai/sdk-go/api"

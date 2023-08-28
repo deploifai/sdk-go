@@ -1,16 +1,16 @@
-package data_storage
+package dataset
 
 import (
 	"context"
 	"github.com/deploifai/sdk-go/api/generated"
 )
 
-type DownloadFileInput struct {
+type UploadFileInput struct {
+	srcAbspath      string
 	remoteObjectKey string
-	destAbsPath     string
 }
 
-func (c *Client) DownloadFile(ctx context.Context, where generated.DataStorageContainerWhereUniqueInput, data DownloadFileInput) error {
+func (c *Client) UploadFile(ctx context.Context, where generated.DataStorageContainerWhereUniqueInput, data UploadFileInput) error {
 
 	dataStorage, dataStorageContainer, err := getDataStorageAndContainer(ctx, c.options.API, where)
 	if err != nil {
@@ -22,7 +22,7 @@ func (c *Client) DownloadFile(ctx context.Context, where generated.DataStorageCo
 		return err
 	}
 
-	_, err = dataStorageClient.DownloadFile(data.remoteObjectKey, data.destAbsPath)
+	_, err = dataStorageClient.UploadFile(data.srcAbspath, data.remoteObjectKey)
 
 	return err
 }
