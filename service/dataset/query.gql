@@ -1,6 +1,9 @@
 fragment DataStorageFragment on DataStorage {
     id
     name
+    projects {
+        name
+    }
     cloudProfile {
         ...CloudProfileFragment
     }
@@ -9,9 +12,14 @@ fragment DataStorageFragment on DataStorage {
     }
 }
 
-
 query GetDataStorage($where: DataStorageWhereUniqueInput!) {
     dataStorage(where: $where) {
+        ...DataStorageFragment
+    }
+}
+
+query GetDataStorages($whereAccount: AccountWhereUniqueInput!, $whereDataStorage: DataStorageWhereInput) {
+    dataStorages(whereAccount: $whereAccount, whereDataStorage: $whereDataStorage) {
         ...DataStorageFragment
     }
 }

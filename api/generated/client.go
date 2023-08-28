@@ -15,6 +15,7 @@ type GQLClient interface {
 	GetCloudProfiles(ctx context.Context, whereAccount AccountWhereUniqueInput, whereCloudProfile *CloudProfileWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetCloudProfiles, error)
 	CreateCloudProfile(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateCloudProfileInput, interceptors ...clientv2.RequestInterceptor) (*CreateCloudProfile, error)
 	GetDataStorage(ctx context.Context, where DataStorageWhereUniqueInput, interceptors ...clientv2.RequestInterceptor) (*GetDataStorage, error)
+	GetDataStorages(ctx context.Context, whereAccount AccountWhereUniqueInput, whereDataStorage *DataStorageWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetDataStorages, error)
 	GetDataStorageContainer(ctx context.Context, where DataStorageContainerWhereUniqueInput, interceptors ...clientv2.RequestInterceptor) (*GetDataStorageContainer, error)
 	GetProjects(ctx context.Context, whereAccount AccountWhereUniqueInput, whereProject *ProjectWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetProjects, error)
 	CreateProject(ctx context.Context, whereAccount AccountWhereUniqueInput, data CreateProjectInput, interceptors ...clientv2.RequestInterceptor) (*CreateProject, error)
@@ -293,6 +294,7 @@ func (t *CloudProfileFragment) GetProvider() *CloudProvider {
 type DataStorageFragment struct {
 	ID                      string                           "json:\"id\" graphql:\"id\""
 	Name                    string                           "json:\"name\" graphql:\"name\""
+	Projects                []*DataStorageFragment_Projects  "json:\"projects\" graphql:\"projects\""
 	CloudProfile            *CloudProfileFragment            "json:\"cloudProfile,omitempty\" graphql:\"cloudProfile\""
 	CloudProviderYodaConfig *CloudProviderYodaConfigFragment "json:\"cloudProviderYodaConfig,omitempty\" graphql:\"cloudProviderYodaConfig\""
 }
@@ -308,6 +310,12 @@ func (t *DataStorageFragment) GetName() string {
 		t = &DataStorageFragment{}
 	}
 	return t.Name
+}
+func (t *DataStorageFragment) GetProjects() []*DataStorageFragment_Projects {
+	if t == nil {
+		t = &DataStorageFragment{}
+	}
+	return t.Projects
 }
 func (t *DataStorageFragment) GetCloudProfile() *CloudProfileFragment {
 	if t == nil {
@@ -418,6 +426,39 @@ func (t *AccountFragment) GetPicture() *string {
 	return t.Picture
 }
 
+type DataStorageFragment_Projects struct {
+	Name string "json:\"name\" graphql:\"name\""
+}
+
+func (t *DataStorageFragment_Projects) GetName() string {
+	if t == nil {
+		t = &DataStorageFragment_Projects{}
+	}
+	return t.Name
+}
+
+type GetDataStorage_DataStorage_DataStorageFragment_Projects struct {
+	Name string "json:\"name\" graphql:\"name\""
+}
+
+func (t *GetDataStorage_DataStorage_DataStorageFragment_Projects) GetName() string {
+	if t == nil {
+		t = &GetDataStorage_DataStorage_DataStorageFragment_Projects{}
+	}
+	return t.Name
+}
+
+type GetDataStorages_DataStorages_DataStorageFragment_Projects struct {
+	Name string "json:\"name\" graphql:\"name\""
+}
+
+func (t *GetDataStorages_DataStorages_DataStorageFragment_Projects) GetName() string {
+	if t == nil {
+		t = &GetDataStorages_DataStorages_DataStorageFragment_Projects{}
+	}
+	return t.Name
+}
+
 type GetAccounts_Me_Teams struct {
 	Account *AccountFragment "json:\"account\" graphql:\"account\""
 }
@@ -489,6 +530,17 @@ func (t *GetDataStorage) GetDataStorage() *DataStorageFragment {
 		t = &GetDataStorage{}
 	}
 	return t.DataStorage
+}
+
+type GetDataStorages struct {
+	DataStorages []*DataStorageFragment "json:\"dataStorages\" graphql:\"dataStorages\""
+}
+
+func (t *GetDataStorages) GetDataStorages() []*DataStorageFragment {
+	if t == nil {
+		t = &GetDataStorages{}
+	}
+	return t.DataStorages
 }
 
 type GetDataStorageContainer struct {
@@ -620,6 +672,9 @@ const GetDataStorageDocument = `query GetDataStorage ($where: DataStorageWhereUn
 fragment DataStorageFragment on DataStorage {
 	id
 	name
+	projects {
+		name
+	}
 	cloudProfile {
 		... CloudProfileFragment
 	}
@@ -668,6 +723,72 @@ func (c *Client) GetDataStorage(ctx context.Context, where DataStorageWhereUniqu
 
 	var res GetDataStorage
 	if err := c.Client.Post(ctx, "GetDataStorage", GetDataStorageDocument, &res, vars, interceptors...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetDataStoragesDocument = `query GetDataStorages ($whereAccount: AccountWhereUniqueInput!, $whereDataStorage: DataStorageWhereInput) {
+	dataStorages(whereAccount: $whereAccount, whereDataStorage: $whereDataStorage) {
+		... DataStorageFragment
+	}
+}
+fragment DataStorageFragment on DataStorage {
+	id
+	name
+	projects {
+		name
+	}
+	cloudProfile {
+		... CloudProfileFragment
+	}
+	cloudProviderYodaConfig {
+		... CloudProviderYodaConfigFragment
+	}
+}
+fragment CloudProfileFragment on CloudProfile {
+	id
+	name
+	provider
+}
+fragment CloudProviderYodaConfigFragment on CloudProviderYodaConfig {
+	id
+	awsConfig {
+		... AWSYodaConfigFragment
+	}
+	azureConfig {
+		... AzureYodaConfigFragment
+	}
+	gcpConfig {
+		... GCPYodaConfigFragment
+	}
+}
+fragment AWSYodaConfigFragment on AWSYodaConfig {
+	id
+	awsAccessKey
+	awsSecretAccessKey
+	awsRegion
+}
+fragment AzureYodaConfigFragment on AzureYodaConfig {
+	id
+	storageAccount
+	storageAccessKey
+}
+fragment GCPYodaConfigFragment on GCPYodaConfig {
+	id
+	gcpServiceAccountKey
+}
+`
+
+func (c *Client) GetDataStorages(ctx context.Context, whereAccount AccountWhereUniqueInput, whereDataStorage *DataStorageWhereInput, interceptors ...clientv2.RequestInterceptor) (*GetDataStorages, error) {
+	vars := map[string]interface{}{
+		"whereAccount":     whereAccount,
+		"whereDataStorage": whereDataStorage,
+	}
+
+	var res GetDataStorages
+	if err := c.Client.Post(ctx, "GetDataStorages", GetDataStoragesDocument, &res, vars, interceptors...); err != nil {
 		return nil, err
 	}
 
