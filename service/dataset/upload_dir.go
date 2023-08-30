@@ -53,7 +53,7 @@ func (c *Client) UploadDir(
 
 	// clean the SrcAbsPath and RemoteObjectPrefix
 	srcAbsPath := filepath.Clean(data.SrcAbsPath) + "/"
-	remoteObjectPrefix := cleanRemoteObjectPrefix(data.RemoteObjectPrefix)
+	remoteObjectPrefix := CleanRemoteObjectPrefix(data.RemoteObjectPrefix)
 
 	filePaths, err := listFiles(srcAbsPath)
 	if err != nil {
@@ -64,7 +64,8 @@ func (c *Client) UploadDir(
 	fileCountChan <- len(filePaths)
 
 	var wg sync.WaitGroup
-	var errChan = make(chan error)
+	var errChan = make(chan error, len(filePaths))
+	defer close(errChan)
 
 	pool, err := ants.NewPoolWithFunc(poolSize, func(i interface{}) {
 		defer wg.Done()
@@ -86,7 +87,7 @@ func (c *Client) UploadDir(
 
 	for _, filePath := range filePaths {
 		wg.Add(1)
-		err := pool.Invoke(workerTask{path: filePath, resultChan: resultChan, errChan: errChan})
+		err = pool.Invoke(workerTask{path: filePath, resultChan: resultChan, errChan: errChan})
 		if err != nil {
 			return err
 		}

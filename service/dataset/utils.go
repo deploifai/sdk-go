@@ -25,7 +25,7 @@ func newDataStorageClient(ctx context.Context, api api.Provider, dataStorage gen
 	return cloudClientWrapper.CloudClient.NewDataStorageClient(dataStorage.GetID(), dataStorageContainer.GetID())
 }
 
-func cleanRemoteObjectPrefix(raw string) string {
+func CleanRemoteObjectPrefix(raw string) string {
 	f := filepath.ToSlash(filepath.Clean(raw))
 	// remove leading slash if any
 	if len(f) > 0 && f[0] == '/' {

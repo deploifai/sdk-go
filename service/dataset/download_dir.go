@@ -50,7 +50,7 @@ func (c *Client) DownloadDir(
 		return err
 	}
 
-	prefix := cleanRemoteObjectPrefix(data.RemoteObjectPrefix)
+	prefix := CleanRemoteObjectPrefix(data.RemoteObjectPrefix)
 
 	objects, err := listObjects(dataStorageClient, &implementable.ListObjectsInput{
 		Prefix: &prefix,
@@ -64,7 +64,8 @@ func (c *Client) DownloadDir(
 	destAbsPath := filepath.Clean(data.DestAbsPath) + "/"
 
 	var wg sync.WaitGroup
-	var errChan = make(chan error)
+	var errChan = make(chan error, len(objects))
+	defer close(errChan)
 
 	pool, err := ants.NewPoolWithFunc(poolSize, func(i interface{}) {
 		defer wg.Done()
@@ -95,8 +96,7 @@ func (c *Client) DownloadDir(
 
 	for _, object := range objects {
 		wg.Add(1)
-		err := pool.Invoke(workerTask{path: object.Key, resultChan: resultChan, errChan: errChan})
-		if err != nil {
+		if err = pool.Invoke(workerTask{path: object.Key, resultChan: resultChan, errChan: errChan}); err != nil {
 			return err
 		}
 	}
