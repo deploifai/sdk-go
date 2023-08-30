@@ -60,7 +60,7 @@ func (r *Client) DownloadFile(remoteObjectKey string, destAbsPath string) (inter
 		return nil, err
 	}
 
-	file, err := os.Create(destAbsPath)
+	file, err := os.Open(destAbsPath)
 	if err != nil {
 		return nil, err
 	}
