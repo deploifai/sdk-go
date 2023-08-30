@@ -1,9 +1,6 @@
 fragment DataStorageFragment on DataStorage {
     id
     name
-    projects {
-        name
-    }
     cloudProfile {
         ...CloudProfileFragment
     }

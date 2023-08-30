@@ -294,7 +294,6 @@ func (t *CloudProfileFragment) GetProvider() *CloudProvider {
 type DataStorageFragment struct {
 	ID                      string                           "json:\"id\" graphql:\"id\""
 	Name                    string                           "json:\"name\" graphql:\"name\""
-	Projects                []*DataStorageFragment_Projects  "json:\"projects\" graphql:\"projects\""
 	CloudProfile            *CloudProfileFragment            "json:\"cloudProfile,omitempty\" graphql:\"cloudProfile\""
 	CloudProviderYodaConfig *CloudProviderYodaConfigFragment "json:\"cloudProviderYodaConfig,omitempty\" graphql:\"cloudProviderYodaConfig\""
 	Containers              []*DataStorageContainerFragment  "json:\"containers\" graphql:\"containers\""
@@ -311,12 +310,6 @@ func (t *DataStorageFragment) GetName() string {
 		t = &DataStorageFragment{}
 	}
 	return t.Name
-}
-func (t *DataStorageFragment) GetProjects() []*DataStorageFragment_Projects {
-	if t == nil {
-		t = &DataStorageFragment{}
-	}
-	return t.Projects
 }
 func (t *DataStorageFragment) GetCloudProfile() *CloudProfileFragment {
 	if t == nil {
@@ -431,39 +424,6 @@ func (t *AccountFragment) GetPicture() *string {
 		t = &AccountFragment{}
 	}
 	return t.Picture
-}
-
-type DataStorageFragment_Projects struct {
-	Name string "json:\"name\" graphql:\"name\""
-}
-
-func (t *DataStorageFragment_Projects) GetName() string {
-	if t == nil {
-		t = &DataStorageFragment_Projects{}
-	}
-	return t.Name
-}
-
-type GetDataStorage_DataStorage_DataStorageFragment_Projects struct {
-	Name string "json:\"name\" graphql:\"name\""
-}
-
-func (t *GetDataStorage_DataStorage_DataStorageFragment_Projects) GetName() string {
-	if t == nil {
-		t = &GetDataStorage_DataStorage_DataStorageFragment_Projects{}
-	}
-	return t.Name
-}
-
-type GetDataStorages_DataStorages_DataStorageFragment_Projects struct {
-	Name string "json:\"name\" graphql:\"name\""
-}
-
-func (t *GetDataStorages_DataStorages_DataStorageFragment_Projects) GetName() string {
-	if t == nil {
-		t = &GetDataStorages_DataStorages_DataStorageFragment_Projects{}
-	}
-	return t.Name
 }
 
 type GetAccounts_Me_Teams struct {
@@ -679,9 +639,6 @@ const GetDataStorageDocument = `query GetDataStorage ($where: DataStorageWhereUn
 fragment DataStorageFragment on DataStorage {
 	id
 	name
-	projects {
-		name
-	}
 	cloudProfile {
 		... CloudProfileFragment
 	}
@@ -753,9 +710,6 @@ const GetDataStoragesDocument = `query GetDataStorages ($whereAccount: AccountWh
 fragment DataStorageFragment on DataStorage {
 	id
 	name
-	projects {
-		name
-	}
 	cloudProfile {
 		... CloudProfileFragment
 	}
