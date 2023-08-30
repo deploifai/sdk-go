@@ -1,0 +1,12 @@
+fragment CloudProviderYodaConfigFragment on CloudProviderYodaConfig {
+    id
+    awsConfig {
+        ...AWSYodaConfigFragment
+    }
+    azureConfig {
+        ...AzureYodaConfigFragment
+    }
+    gcpConfig {
+        ...GCPYodaConfigFragment
+    }
+}

@@ -1,0 +1,6 @@
+fragment AWSYodaConfigFragment on AWSYodaConfig {
+    id
+    awsAccessKey
+    awsSecretAccessKey
+    awsRegion
+}

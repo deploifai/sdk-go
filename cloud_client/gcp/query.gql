@@ -1,0 +1,4 @@
+fragment GCPYodaConfigFragment on GCPYodaConfig {
+    id
+    gcpServiceAccountKey
+}

@@ -1,0 +1,38 @@
+fragment DataStorageFragment on DataStorage {
+    id
+    name
+    cloudProfile {
+        ...CloudProfileFragment
+    }
+    cloudProviderYodaConfig {
+        ...CloudProviderYodaConfigFragment
+    }
+    containers {
+        ...DataStorageContainerFragment
+    }
+}
+
+query GetDataStorage($where: DataStorageWhereUniqueInput!) {
+    dataStorage(where: $where) {
+        ...DataStorageFragment
+    }
+}
+
+query GetDataStorages($whereAccount: AccountWhereUniqueInput!, $whereDataStorage: DataStorageWhereInput) {
+    dataStorages(whereAccount: $whereAccount, whereDataStorage: $whereDataStorage) {
+        ...DataStorageFragment
+    }
+}
+
+fragment DataStorageContainerFragment on DataStorageContainer {
+    id
+    directoryName
+    cloudName
+    dataStorageId
+}
+
+query GetDataStorageContainer($where: DataStorageContainerWhereUniqueInput!) {
+    dataStorageContainer(where: $where) {
+        ...DataStorageContainerFragment
+    }
+}

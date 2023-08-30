@@ -1033,17 +1033,24 @@ type CloudCredentialsWhereInput struct {
 }
 
 type CloudProfile struct {
-	ID               string             `json:"id"`
-	Name             string             `json:"name"`
-	Provider         CloudProvider      `json:"provider"`
-	Hosted           bool               `json:"hosted"`
-	AccountID        string             `json:"accountId"`
-	DefaultAccountID *string            `json:"defaultAccountId"`
-	CredentialsID    string             `json:"credentialsId"`
-	Count            *CloudProfileCount `json:"_count"`
-	IsEmpty          bool               `json:"isEmpty"`
-	IsDefault        bool               `json:"isDefault"`
-	Credentials      CloudCredentials   `json:"credentials"`
+	ID                  string               `json:"id"`
+	Name                string               `json:"name"`
+	Provider            CloudProvider        `json:"provider"`
+	Hosted              bool                 `json:"hosted"`
+	AccountID           string               `json:"accountId"`
+	DefaultAccountID    *string              `json:"defaultAccountId"`
+	CredentialsID       string               `json:"credentialsId"`
+	Count               *CloudProfileCount   `json:"_count"`
+	Vpcs                []*Vpc               `json:"vpcs"`
+	Applications        []*Application       `json:"applications"`
+	Trainings           []*Training          `json:"trainings"`
+	Experiments         []*Experiment        `json:"experiments"`
+	DataStorages        []*DataStorage       `json:"dataStorages"`
+	ContainerRegistries []*ContainerRegistry `json:"containerRegistries"`
+	Projects            []*Project           `json:"projects"`
+	IsEmpty             bool                 `json:"isEmpty"`
+	IsDefault           bool                 `json:"isDefault"`
+	Credentials         CloudCredentials     `json:"credentials"`
 }
 
 type CloudProfileAccountIDNameProviderCompoundUniqueInput struct {
