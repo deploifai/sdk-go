@@ -67,7 +67,7 @@ func (r *Client) UploadFile(srcAbsPath string, remoteObjectKey string) (interfac
 func (r *Client) DownloadFile(remoteObjectKey string, destAbsPath string) (interface{}, error) {
 
 	// create the file
-	file, err := os.Open(destAbsPath)
+	file, err := os.Create(destAbsPath)
 	if err != nil {
 		return nil, err
 	}
