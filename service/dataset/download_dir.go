@@ -2,7 +2,6 @@ package dataset
 
 import (
 	"context"
-	"fmt"
 	"github.com/deploifai/sdk-go/api/generated"
 	"github.com/deploifai/sdk-go/cloud_client/implementable"
 	"github.com/panjf2000/ants/v2"
@@ -13,8 +12,8 @@ import (
 )
 
 type DownloadDirInput struct {
-	remoteObjectPrefix string
-	destAbsPath        string
+	RemoteObjectPrefix string
+	DestAbsPath        string
 }
 
 type DownloadDirOptions struct {
@@ -51,8 +50,7 @@ func (c *Client) DownloadDir(
 		return err
 	}
 
-	prefix := cleanRemoteObjectPrefix(data.remoteObjectPrefix)
-	fmt.Println("prefix: ", prefix)
+	prefix := cleanRemoteObjectPrefix(data.RemoteObjectPrefix)
 
 	objects, err := listObjects(dataStorageClient, &implementable.ListObjectsInput{
 		Prefix: &prefix,
@@ -61,11 +59,9 @@ func (c *Client) DownloadDir(
 		return err
 	}
 
-	fmt.Println("number of objects: ", len(objects))
-
 	fileCountChan <- len(objects)
 
-	destAbsPath := filepath.Clean(data.destAbsPath) + "/"
+	destAbsPath := filepath.Clean(data.DestAbsPath) + "/"
 
 	var wg sync.WaitGroup
 	var errChan = make(chan error)

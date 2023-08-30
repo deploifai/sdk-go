@@ -11,8 +11,8 @@ import (
 )
 
 type UploadDirInput struct {
-	srcAbsPath         string
-	remoteObjectPrefix string
+	SrcAbsPath         string
+	RemoteObjectPrefix string
 }
 
 type UploadDirOptions struct {
@@ -51,9 +51,9 @@ func (c *Client) UploadDir(
 		return err
 	}
 
-	// clean the srcAbsPath and remoteObjectPrefix
-	srcAbsPath := filepath.Clean(data.srcAbsPath) + "/"
-	remoteObjectPrefix := cleanRemoteObjectPrefix(data.remoteObjectPrefix)
+	// clean the SrcAbsPath and RemoteObjectPrefix
+	srcAbsPath := filepath.Clean(data.SrcAbsPath) + "/"
+	remoteObjectPrefix := cleanRemoteObjectPrefix(data.RemoteObjectPrefix)
 
 	filePaths, err := listFiles(srcAbsPath)
 	if err != nil {

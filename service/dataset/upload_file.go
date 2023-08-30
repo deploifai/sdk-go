@@ -6,8 +6,8 @@ import (
 )
 
 type UploadFileInput struct {
-	srcAbspath      string
-	remoteObjectKey string
+	SrcAbspath      string
+	RemoteObjectKey string
 }
 
 func (c *Client) UploadFile(ctx context.Context, where generated.DataStorageWhereUniqueInput, data UploadFileInput) error {
@@ -22,7 +22,7 @@ func (c *Client) UploadFile(ctx context.Context, where generated.DataStorageWher
 		return err
 	}
 
-	_, err = dataStorageClient.UploadFile(data.srcAbspath, data.remoteObjectKey)
+	_, err = dataStorageClient.UploadFile(data.SrcAbspath, data.RemoteObjectKey)
 
 	return err
 }

@@ -3,11 +3,12 @@ package dataset
 import (
 	"context"
 	"github.com/deploifai/sdk-go/api/generated"
+	"os"
 )
 
 type DownloadFileInput struct {
-	remoteObjectKey string
-	destAbsPath     string
+	RemoteObjectKey string
+	DestAbsPath     string
 }
 
 func (c *Client) DownloadFile(ctx context.Context, where generated.DataStorageWhereUniqueInput, data DownloadFileInput) error {
@@ -22,7 +23,11 @@ func (c *Client) DownloadFile(ctx context.Context, where generated.DataStorageWh
 		return err
 	}
 
-	_, err = dataStorageClient.DownloadFile(data.remoteObjectKey, data.destAbsPath)
+	if _, err := os.Create(data.DestAbsPath); err != nil {
+		return err
+	}
+
+	_, err = dataStorageClient.DownloadFile(data.RemoteObjectKey, data.DestAbsPath)
 
 	return err
 }
