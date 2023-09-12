@@ -12,6 +12,7 @@ type rest struct {
 
 type auth struct {
 	Login string
+	Check string
 }
 
 const base = "https://api.deploif.ai"
@@ -24,6 +25,7 @@ var Endpoint = endpoint{
 
 		Auth: auth{
 			Login: "/auth/login/cli",
+			Check: "/auth/check/cli",
 		},
 	},
 }
