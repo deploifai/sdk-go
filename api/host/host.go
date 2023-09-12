@@ -24,8 +24,8 @@ var Endpoint = endpoint{
 		Base: base,
 
 		Auth: auth{
-			Login: "/auth/login/cli",
-			Check: "/auth/check/cli",
+			Login: "/auth/login/token",
+			Check: "/auth/check/token",
 		},
 	},
 }
